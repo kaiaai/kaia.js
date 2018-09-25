@@ -21,7 +21,7 @@ npm install kaia.js
 Now you can require/import `kaia.js`:
 
 ```js
-import { TODO } from 'kaia.js';
+import { TfMobile } from 'kaia.js';
 ```
 
 ### Via `<script>`
