@@ -20,7 +20,7 @@ export class TfMobile {
     params = params || {};
     params.handle = this._handle;
     let result = JSON.parse(window._kaia.tfmobileInit(modelDecoded, JSON.stringify(params)));
-    if (result.err !== undefined)
+    if (result.err)
       throw('Error in constructor ' + result.err);
   }
 
