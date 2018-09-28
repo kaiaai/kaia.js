@@ -11,6 +11,10 @@ export class TfMobile {
     if (window._kaia.tfmobile === undefined) {
       window._kaia.tfmobile = function () {};
       window._kaia.tfmobile.engine = [];
+      window._kaia.tfmobile.cb = function (jsonString: string) {
+        const opResult = JSON.parse(unescape(jsonString));
+        console.log(opResult);
+      };
     }
     window._kaia.tfmobile.engine.push(this);
     this._handle = window._kaia.tfmobile.engine.length - 1;
