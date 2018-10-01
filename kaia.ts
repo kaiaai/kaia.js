@@ -18,7 +18,7 @@ export class TfMobile {
         const opRes = JSON.parse(unescape(jsonString));
         console.log(opRes);
         let obj = window._kaia.tfmobile.engine[opRes.handle];
-        opRes.err ? obj.rejectPromise(opRes.err) : obj.resolvePromise(opRes);
+        opRes.err ? obj._rejectPromise(opRes.err) : obj._resolvePromise(opRes);
       };
     }
 
