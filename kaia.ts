@@ -9,14 +9,14 @@ export class TfMobile {
     if (window._kaia === undefined)
       throw('kaia.js requires Android Kaia.ai app to run');
 
-    console.log('TfMobile constructor called');
+    //console.log('TfMobile constructor called');
 
     if (window._kaia.tfmobile === undefined) {
       window._kaia.tfmobile = function () {};
       window._kaia.tfmobile.engine = [];
       window._kaia.tfmobile.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        console.log(opRes);
+        //console.log(opRes);
         let obj = window._kaia.tfmobile.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
@@ -24,7 +24,7 @@ export class TfMobile {
 
     window._kaia.tfmobile.engine.push(this);
     this._handle = window._kaia.tfmobile.engine.length - 1;
-    console.log('_handle = ' + this._handle);
+    //console.log('_handle = ' + this._handle);
   }
 
   loadModel(model: ArrayBuffer, params: any): Promise<any> {
@@ -64,7 +64,7 @@ export class TfMobile {
 
   run(data: ArrayBuffer[], params: any): Promise<any> {
     if (this.isClosed())
-      throw('Engine instance has been closed');
+      throw('TfMobile instance has been closed');
     const textDecoder = new TextDecoder("iso-8859-1");
     let dataDecoded = [];
     for (let i = 0; i < data.length; i++)
