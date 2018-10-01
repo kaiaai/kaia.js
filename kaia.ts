@@ -95,7 +95,7 @@ export class TfMobile {
   close(): void {
     let params = { handle: this._handle };
     window._kaia.tfmobile.engine[this._handle] = null;
-    let res = window._kaia.tfmobileClose(params);
+    let res = JSON.parse(window._kaia.tfmobileClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
   }
