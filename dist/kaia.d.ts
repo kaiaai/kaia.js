@@ -1,7 +1,7 @@
 export declare class TfMobile {
     readonly _handle: number;
-    _resolvePromise: Function | null;
-    _rejectPromise: Function | null;
+    _resolveFunc: Function | null;
+    _rejectFunc: Function | null;
     _modelLoaded: boolean;
     constructor();
     loadModel(model: ArrayBuffer, params: any): Promise<any>;

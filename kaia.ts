@@ -1,7 +1,7 @@
 export class TfMobile {
   readonly _handle: number;
-  _resolvePromise: Function | null = null;
-  _rejectPromise: Function | null = null;
+  _resolveFunc: Function | null = null;
+  _rejectFunc: Function | null = null;
   _modelLoaded: boolean = false;
 
   constructor() {
@@ -18,7 +18,7 @@ export class TfMobile {
         const opRes = JSON.parse(unescape(jsonString));
         console.log(opRes);
         let obj = window._kaia.tfmobile.engine[opRes.handle];
-        opRes.err ? obj._rejectPromise(opRes.err) : obj._resolvePromise(opRes);
+        opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
     }
 
@@ -43,20 +43,20 @@ export class TfMobile {
   }
 
   _clearCallback(): void {
-    this._resolvePromise = null;
-    this._rejectPromise = null;
+    this._resolveFunc = null;
+    this._rejectFunc = null;
     window._kaia.tfmobile.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
-    let cb = this._resolvePromise;
+    let cb = this._resolveFunc;
     this._clearCallback();
     if (cb !== null)
       cb(res);
   }
 
   _reject(err: any): void {
-    let cb = this._rejectPromise;
+    let cb = this._rejectFunc;
     this._clearCallback();
     if (cb !== null)
       cb(err);
@@ -81,8 +81,8 @@ export class TfMobile {
       throw(res.err);
 
     let promise = new Promise<any>((resolve, reject) => {
-      this._resolve = resolve;
-      this._reject = reject;
+      this._resolveFunc = resolve;
+      this._rejectFunc = reject;
     });
     window._kaia.tfmobile.engine[this._handle] = this;
     return promise;

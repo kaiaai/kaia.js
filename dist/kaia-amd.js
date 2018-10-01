@@ -2,8 +2,8 @@ define(['exports'], function (exports) { 'use strict';
 
 class TfMobile {
     constructor() {
-        this._resolvePromise = null;
-        this._rejectPromise = null;
+        this._resolveFunc = null;
+        this._rejectFunc = null;
         this._modelLoaded = false;
         if (window._kaia === undefined)
             throw ('kaia.js requires Android Kaia.ai app to run');
@@ -15,7 +15,7 @@ class TfMobile {
                 const opRes = JSON.parse(unescape(jsonString));
                 console.log(opRes);
                 let obj = window._kaia.tfmobile.engine[opRes.handle];
-                opRes.err ? obj._rejectPromise(opRes.err) : obj._resolvePromise(opRes);
+                opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
             };
         }
         window._kaia.tfmobile.engine.push(this);
@@ -34,18 +34,18 @@ class TfMobile {
         return this._makePromise(res);
     }
     _clearCallback() {
-        this._resolvePromise = null;
-        this._rejectPromise = null;
+        this._resolveFunc = null;
+        this._rejectFunc = null;
         window._kaia.tfmobile.engine[this._handle] = null;
     }
     _resolve(res) {
-        let cb = this._resolvePromise;
+        let cb = this._resolveFunc;
         this._clearCallback();
         if (cb !== null)
             cb(res);
     }
     _reject(err) {
-        let cb = this._rejectPromise;
+        let cb = this._rejectFunc;
         this._clearCallback();
         if (cb !== null)
             cb(err);
@@ -66,8 +66,8 @@ class TfMobile {
         if (res.err)
             throw (res.err);
         let promise = new Promise((resolve, reject) => {
-            this._resolve = resolve;
-            this._reject = reject;
+            this._resolveFunc = resolve;
+            this._rejectFunc = reject;
         });
         window._kaia.tfmobile.engine[this._handle] = this;
         return promise;
