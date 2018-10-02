@@ -1,7 +1,7 @@
 import typescript from 'rollup-plugin-typescript2';
 
 export default {
-  input: 'kaia.ts',
+  input: 'src/kaia.ts',
   plugins: [typescript()],
   output: [{
     file: 'dist/kaia-iife.js',
