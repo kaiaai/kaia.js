@@ -13,3 +13,4 @@ export declare class TfMobile {
     isClosed(): boolean;
     close(): void;
 }
+export declare function createTfMobile(model: ArrayBuffer, params: any): Promise<TfMobile>;

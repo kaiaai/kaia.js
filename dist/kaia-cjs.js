@@ -85,5 +85,13 @@ class TfMobile {
             throw (res.err);
     }
 }
+async function createTfMobile(model, params) {
+    const tfMobile = new TfMobile();
+    const res = await tfMobile.loadModel(model, params || {});
+    if (typeof res === "string")
+        throw (res);
+    return tfMobile;
+}
 
 exports.TfMobile = TfMobile;
+exports.createTfMobile = createTfMobile;

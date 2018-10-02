@@ -100,3 +100,11 @@ export class TfMobile {
       throw(res.err);
   }
 }
+
+export async function createTfMobile(model: ArrayBuffer, params: any) {
+  const tfMobile = new TfMobile();
+  const res = await tfMobile.loadModel(model, params || {});
+  if (typeof res === "string")
+    throw(res);
+  return tfMobile;
+}
