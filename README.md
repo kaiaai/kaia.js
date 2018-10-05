@@ -6,7 +6,9 @@ Kaia.ai platform's JS client library
 
 ### TfMobile
 
-[Sample app](https://kaia.ai/view-app/5ba319fc89bed10c954a2702)
+- [Sample app](https://kaia.ai/view-app/5ba319fc89bed10c954a2702)
+- Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app)
+- Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app-node), built with node.js and webpack
 
 ```js
 let tfMobile = await createTfMobile(model); // load model
