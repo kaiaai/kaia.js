@@ -4,8 +4,8 @@
     "description": "JS library for Kaia.ai robots",
     "main": "./dist/kaia-cjs.js",
     "module": "./dist/kaia.mjs",
-    "jsdelivr": "dist/kaia.mjs",
-    "unpkg": "dist/kaia.mjs",
+    "jsdelivr": "./dist/kaia.mjs",
+    "unpkg": "./dist/kaia.mjs",
     "types": "./dist/kaia.d.ts",
     "scripts": {
         "build": "del dist && rollup -c && npm run compress-iife && npm run create-compat && npm run compress-amd",

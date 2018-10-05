@@ -4,10 +4,28 @@ Kaia.ai platform's JS client library
 
 ## Usage
 
-### TODO
+### TfMobile
+
+[Sample app](https://kaia.ai/view-app/5ba319fc89bed10c954a2702)
 
 ```js
-TODO
+let tfMobile = await createTfMobile(model); // load model
+...
+let result = await tfMobile.run([img], // classify image
+  {feed: [
+    {width: size,
+     height: size,
+     inputName: 'input',
+     imageMean: 128.0,
+     imageStd: 128.0,
+     feedType: 'colorBitmapAsFloat'
+    }],
+   run: {enableStats: false},
+   fetch: {outputNames: ['MobilenetV1/Predictions/Softmax'], outputTypes: ['float']}
+  });
+let probabilities = result.output[0];
+...
+tfMobile.close(); // optional
 ```
 
 ## Installing
@@ -21,7 +39,7 @@ npm install kaia.js
 Now you can require/import `kaia.js`:
 
 ```js
-import { TfMobile } from 'kaia.js';
+import { TfMobile, TfLite } from 'kaia.js';
 ```
 
 ### Via `<script>`
@@ -42,4 +60,3 @@ These built versions are also available on jsDelivr, e.g.:
   import { get, set } from 'https://cdn.jsdelivr.net/npm/kaia@0/dist/kaia.mjs';
 </script>
 ```
-
