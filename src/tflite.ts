@@ -33,7 +33,6 @@ export class TfLite {
       window._kaia.tflite.engine = [];
       window._kaia.tflite.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        //console.log(opRes);
         let obj = window._kaia.tflite.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };

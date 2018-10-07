@@ -62,3 +62,8 @@ These built versions are also available on jsDelivr, e.g.:
   import { get, set } from 'https://cdn.jsdelivr.net/npm/kaia@0/dist/kaia.mjs';
 </script>
 ```
+
+## Customizing NN Model
+
+- To make a custom TfMobile model please follow a detailed [Google Codelabs TFMobile](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2/#0) tutorial
+- To make a custom TfMobile model please follow a detailed [Google Codelabs TFLite](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2-tflite/index.html#0) tutorial
