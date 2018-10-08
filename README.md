@@ -30,6 +30,35 @@ let probabilities = result.output[0];
 tfMobile.close(); // optional
 ```
 
+### TfLite
+
+- [Sample app](https://kaia.ai/view-app/5bbaccffa2f5f31d466259b6)
+- Sample app [source code](https://github.com/kaiaai/tensorflow-lite-app)
+- Sample app [source code](https://github.com/kaiaai/tensorflow-lite-app-node), built with node.js and webpack
+
+```js
+let tfLite = await createTfLite(model); // load model
+...
+let result = await tfLite.run([img], // classify image
+  {input: [
+    {width: size,
+     height: size,
+     channels: 4,
+     batchSize: 1,
+     imageMean: 128.0,
+     imageStd: 128.0,
+     type: 'colorBitmapAsFloat'
+    }],
+   output: [
+    {type: 'float',
+     size: [1, 1001],
+    }]
+  });
+let probabilities = result.output[0][0];
+...
+tfLite.close(); // optional
+```
+
 ## Installing
 
 ### Via npm + webpack/rollup
@@ -66,4 +95,4 @@ These built versions are also available on jsDelivr, e.g.:
 ## Customizing NN Model
 
 - To make a custom TfMobile model please follow a detailed [Google Codelabs TFMobile](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2/#0) tutorial
-- To make a custom TfMobile model please follow a detailed [Google Codelabs TFLite](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2-tflite/index.html#0) tutorial
+- To make a custom TfLite model please follow a detailed [Google Codelabs TFLite](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2-tflite/index.html#0) tutorial
