@@ -130,7 +130,6 @@ class TfLite {
         this._modelLoaded = false;
         if (window._kaia === undefined)
             throw ('kaia.js requires Android Kaia.ai app to run');
-        //console.log('TfLite constructor called');
         if (window._kaia.tflite === undefined) {
             window._kaia.tflite = function () { };
             window._kaia.tflite.engine = [];
@@ -142,7 +141,6 @@ class TfLite {
         }
         window._kaia.tflite.engine.push(this);
         this._handle = window._kaia.tflite.engine.length - 1;
-        //console.log('_handle = ' + this._handle);
     }
     loadModel(model, params) {
         if (this._modelLoaded)
