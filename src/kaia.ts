@@ -17,3 +17,4 @@
 
 export * from './tfmobile';
 export * from './tflite';
+export * from './kwrecog';

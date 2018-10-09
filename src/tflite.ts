@@ -26,18 +26,18 @@ export class TfLite {
     if (window._kaia === undefined)
       throw('kaia.js requires Android Kaia.ai app to run');
 
-    if (window._kaia.tflite === undefined) {
-      window._kaia.tflite = function () {};
-      window._kaia.tflite.engine = [];
-      window._kaia.tflite.cb = function (jsonString: string) {
+    if (window._kaia.tfLite === undefined) {
+      window._kaia.tfLite = function () {};
+      window._kaia.tfLite.engine = [];
+      window._kaia.tfLite.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        let obj = window._kaia.tflite.engine[opRes.handle];
+        let obj = window._kaia.tfLite.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
     }
 
-    window._kaia.tflite.engine.push(this);
-    this._handle = window._kaia.tflite.engine.length - 1;
+    window._kaia.tfLite.engine.push(this);
+    this._handle = window._kaia.tfLite.engine.length - 1;
   }
 
   loadModel(model: ArrayBuffer, params: any): Promise<any> {
@@ -51,14 +51,14 @@ export class TfLite {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfliteInit(modelDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.tfLiteInit(modelDecoded, JSON.stringify(params)));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.tflite.engine[this._handle] = null;
+    window._kaia.tfLite.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -85,7 +85,7 @@ export class TfLite {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfliteRun(dataDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.tfLiteRun(dataDecoded, JSON.stringify(params)));
     return this._makePromise(res);
   }
 
@@ -97,18 +97,18 @@ export class TfLite {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.tflite.engine[this._handle] = this;
+    window._kaia.tfLite.engine[this._handle] = this;
     return promise;
   }
 
   isClosed(): boolean {
-    return window._kaia.tflite.engine[this._handle] === null;
+    return window._kaia.tfLite.engine[this._handle] === null;
   }
 
   close(): void {
     let params = { handle: this._handle };
-    window._kaia.tflite.engine[this._handle] = null;
-    let res = JSON.parse(window._kaia.tfliteClose(JSON.stringify(params)));
+    window._kaia.tfLite.engine[this._handle] = null;
+    let res = JSON.parse(window._kaia.tfLiteClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
   }

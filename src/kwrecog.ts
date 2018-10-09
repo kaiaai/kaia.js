@@ -15,50 +15,49 @@
  * =============================================================================
  */
 
-export class TfMobile {
+export class KeywordRecognizer {
   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _modelLoaded: boolean = false;
+  _configured: boolean = false;
 
   constructor() {
 
     if (window._kaia === undefined)
       throw('kaia.js requires Android Kaia.ai app to run');
 
-    if (window._kaia.tfMobile === undefined) {
-      window._kaia.tfMobile = function () {};
-      window._kaia.tfMobile.engine = [];
-      window._kaia.tfMobile.cb = function (jsonString: string) {
+    if (window._kaia.kwRecog === undefined) {
+      window._kaia.kwRecog = function () {};
+      window._kaia.kwRecog.engine = [];
+      window._kaia.kwRecog.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        let obj = window._kaia.tfMobile.engine[opRes.handle];
+        let obj = window._kaia.kwRecog.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
     }
 
-    window._kaia.tfMobile.engine.push(this);
-    this._handle = window._kaia.tfMobile.engine.length - 1;
+    window._kaia.kwRecog.engine.push(this);
+    this._handle = window._kaia.kwRecog.engine.length - 1;
   }
 
-  loadModel(model: ArrayBuffer, params: any): Promise<any> {
-    if (this._modelLoaded)
-      throw("Model already loaded");
-    this._modelLoaded = true;
+  configure(params: any, model: ArrayBuffer): Promise<any> {
+    if (this._configured)
+      throw("Already configured");
+    this._configured = true;
 
     // Must use Chrome
-    const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
-
+    const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfMobileInit(modelDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.kwRecogInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.tfMobile.engine[this._handle] = null;
+    window._kaia.kwRecog.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -75,17 +74,15 @@ export class TfMobile {
       cb(err);
   }
 
-  run(data: ArrayBuffer[], params: any): Promise<any> {
+  listen(params: any): Promise<any> {
     if (this.isClosed())
-      throw('TfMobile instance has been closed');
-    const textDecoder = new TextDecoder("iso-8859-1");
-    let dataDecoded = [];
-    for (let i = 0; i < data.length; i++)
-      dataDecoded[i] = textDecoder.decode(data[i]);
-    params = params || {};
+      throw('KeywordRecognizer instance has been closed');
+    params = params || {active: true};
+    if (typeof params == 'boolean')
+      params = {active: params};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfMobileRun(dataDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.kwRecogListen(JSON.stringify(params)));
     return this._makePromise(res);
   }
 
@@ -97,27 +94,27 @@ export class TfMobile {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.tfMobile.engine[this._handle] = this;
+    window._kaia.kwRecog.engine[this._handle] = this;
     return promise;
   }
 
   isClosed(): boolean {
-    return window._kaia.tfMobile.engine[this._handle] === null;
+    return window._kaia.kwRecog.engine[this._handle] === null;
   }
 
   close(): void {
     let params = { handle: this._handle };
-    window._kaia.tfMobile.engine[this._handle] = null;
-    let res = JSON.parse(window._kaia.tfMobileClose(JSON.stringify(params)));
+    window._kaia.kwRecog.engine[this._handle] = null;
+    let res = JSON.parse(window._kaia.kwRecogClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
   }
 }
 
-export async function createTfMobile(model: ArrayBuffer, params: any) {
-  const tfMobile = new TfMobile();
-  const res = await tfMobile.loadModel(model, params || {});
+export async function createKeywordRecognizer(params: any, model: ArrayBuffer) {
+  const kwRecog = new KeywordRecognizer();
+  const res = await kwRecog.configure(params || {}, model);
   if (typeof res === "string")
     throw(res);
-  return tfMobile;
+  return kwRecog;
 }

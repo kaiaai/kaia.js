@@ -14,6 +14,19 @@
  * limitations under the License.
  * =============================================================================
  */
-export * from './tfmobile';
-export * from './tflite';
-export * from './kwrecog';
+export declare class KeywordRecognizer {
+    readonly _handle: number;
+    _resolveFunc: Function | null;
+    _rejectFunc: Function | null;
+    _configured: boolean;
+    constructor();
+    configure(params: any, model: ArrayBuffer): Promise<any>;
+    _clearCallback(): void;
+    _resolve(res: any): void;
+    _reject(err: any): void;
+    listen(params: any): Promise<any>;
+    _makePromise(res: any): Promise<any>;
+    isClosed(): boolean;
+    close(): void;
+}
+export declare function createKeywordRecognizer(params: any, model: ArrayBuffer): Promise<KeywordRecognizer>;
