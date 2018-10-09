@@ -85,10 +85,18 @@ import { TfMobile, TfLite } from 'kaia.js';
 These built versions are also available on jsDelivr, e.g.:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/kaia@0/dist/kaia-iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kaia.js/dist/kaia-iife.min.js"></script>
 <!-- Or in modern browsers: -->
 <script type="module">
-  import { get, set } from 'https://cdn.jsdelivr.net/npm/kaia@0/dist/kaia.mjs';
+  import { createTfMobile, createTfLite } from 'https://cdn.jsdelivr.net/npm/kaia.js';
+</script>
+```
+and unpkg
+```html
+<script src="https://unpkg.com/kaia.js/dist/kaia-iife.min.js"></script>
+<!-- Or in modern browsers: -->
+<script type="module">
+  import { createTfMobile, createTfLite } from 'https://unpkg.com/kaia.js';
 </script>
 ```
 
