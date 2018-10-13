@@ -17,4 +17,4 @@
 
 export * from './tfmobile';
 export * from './tflite';
-export * from './kwrecog';
+export * from './pocketsphinx';
