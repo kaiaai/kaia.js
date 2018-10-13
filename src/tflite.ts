@@ -51,7 +51,7 @@ export class TfLite {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfLiteInit(modelDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.tfLiteInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
   }
 
@@ -85,7 +85,7 @@ export class TfLite {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfLiteRun(dataDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.tfLiteRun(JSON.stringify(params), dataDecoded));
     return this._makePromise(res);
   }
 

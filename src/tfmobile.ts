@@ -51,7 +51,7 @@ export class TfMobile {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfMobileInit(modelDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.tfMobileInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
   }
 
@@ -85,7 +85,7 @@ export class TfMobile {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfMobileRun(dataDecoded, JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.tfMobileRun(JSON.stringify(params), dataDecoded));
     return this._makePromise(res);
   }
 

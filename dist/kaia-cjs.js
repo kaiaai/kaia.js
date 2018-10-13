@@ -45,7 +45,7 @@ class TfMobile {
         const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfMobileInit(modelDecoded, JSON.stringify(params)));
+        let res = JSON.parse(window._kaia.tfMobileInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
@@ -74,7 +74,7 @@ class TfMobile {
             dataDecoded[i] = textDecoder.decode(data[i]);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfMobileRun(dataDecoded, JSON.stringify(params)));
+        let res = JSON.parse(window._kaia.tfMobileRun(JSON.stringify(params), dataDecoded));
         return this._makePromise(res);
     }
     _makePromise(res) {
@@ -149,7 +149,7 @@ class TfLite {
         const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfLiteInit(modelDecoded, JSON.stringify(params)));
+        let res = JSON.parse(window._kaia.tfLiteInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
@@ -178,7 +178,7 @@ class TfLite {
             dataDecoded[i] = textDecoder.decode(data[i]);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfLiteRun(dataDecoded, JSON.stringify(params)));
+        let res = JSON.parse(window._kaia.tfLiteRun(JSON.stringify(params), dataDecoded));
         return this._makePromise(res);
     }
     _makePromise(res) {
