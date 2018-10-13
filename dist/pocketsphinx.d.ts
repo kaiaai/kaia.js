@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-export declare class KeywordRecognizer {
+export declare class PocketSphinx {
     readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
@@ -29,4 +29,4 @@ export declare class KeywordRecognizer {
     isClosed(): boolean;
     close(): void;
 }
-export declare function createKeywordRecognizer(params: any, model: ArrayBuffer): Promise<KeywordRecognizer>;
+export declare function createPocketSphinx(params: any, model: ArrayBuffer): Promise<PocketSphinx>;

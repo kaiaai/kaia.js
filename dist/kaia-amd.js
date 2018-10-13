@@ -224,24 +224,24 @@ async function createTfLite(model, params) {
  * limitations under the License.
  * =============================================================================
  */
-class KeywordRecognizer {
+class PocketSphinx {
     constructor() {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._configured = false;
         if (window._kaia === undefined)
             throw ('kaia.js requires Android Kaia.ai app to run');
-        if (window._kaia.kwRecog === undefined) {
-            window._kaia.kwRecog = function () { };
-            window._kaia.kwRecog.engine = [];
-            window._kaia.kwRecog.cb = function (jsonString) {
+        if (window._kaia.pocketSphinx === undefined) {
+            window._kaia.pocketSphinx = function () { };
+            window._kaia.pocketSphinx.engine = [];
+            window._kaia.pocketSphinx.cb = function (jsonString) {
                 const opRes = JSON.parse(unescape(jsonString));
-                let obj = window._kaia.kwRecog.engine[opRes.handle];
+                let obj = window._kaia.pocketSphinx.engine[opRes.handle];
                 opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
             };
         }
-        window._kaia.kwRecog.engine.push(this);
-        this._handle = window._kaia.kwRecog.engine.length - 1;
+        window._kaia.pocketSphinx.engine.push(this);
+        this._handle = window._kaia.pocketSphinx.engine.length - 1;
     }
     configure(params, model) {
         if (this._configured)
@@ -251,13 +251,13 @@ class KeywordRecognizer {
         const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.kwRecogInit(JSON.stringify(params), modelDecoded));
+        let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.kwRecog.engine[this._handle] = null;
+        window._kaia.pocketSphinx.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -273,12 +273,12 @@ class KeywordRecognizer {
     }
     listen(params) {
         if (this.isClosed())
-            throw ('KeywordRecognizer instance has been closed');
+            throw ('PocketSphinx instance has been closed');
         params = params || { active: true };
         if (typeof params == 'boolean')
             params = { active: params };
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.kwRecogListen(JSON.stringify(params)));
+        let res = JSON.parse(window._kaia.pocketSphinxListen(JSON.stringify(params)));
         return this._makePromise(res);
     }
     _makePromise(res) {
@@ -288,26 +288,26 @@ class KeywordRecognizer {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.kwRecog.engine[this._handle] = this;
+        window._kaia.pocketSphinx.engine[this._handle] = this;
         return promise;
     }
     isClosed() {
-        return window._kaia.kwRecog.engine[this._handle] === null;
+        return window._kaia.pocketSphinx.engine[this._handle] === null;
     }
     close() {
         let params = { handle: this._handle };
-        window._kaia.kwRecog.engine[this._handle] = null;
-        let res = JSON.parse(window._kaia.kwRecogClose(JSON.stringify(params)));
+        window._kaia.pocketSphinx.engine[this._handle] = null;
+        let res = JSON.parse(window._kaia.pocketSphinxClose(JSON.stringify(params)));
         if (res.err)
             throw (res.err);
     }
 }
-async function createKeywordRecognizer(params, model) {
-    const kwRecog = new KeywordRecognizer();
-    const res = await kwRecog.configure(params || {}, model);
+async function createPocketSphinx(params, model) {
+    const pocketSphinx = new PocketSphinx();
+    const res = await pocketSphinx.configure(params || {}, model);
     if (typeof res === "string")
         throw (res);
-    return kwRecog;
+    return pocketSphinx;
 }
 
 /**
@@ -331,8 +331,8 @@ exports.TfMobile = TfMobile;
 exports.createTfMobile = createTfMobile;
 exports.TfLite = TfLite;
 exports.createTfLite = createTfLite;
-exports.KeywordRecognizer = KeywordRecognizer;
-exports.createKeywordRecognizer = createKeywordRecognizer;
+exports.PocketSphinx = PocketSphinx;
+exports.createPocketSphinx = createPocketSphinx;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
