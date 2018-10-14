@@ -111,6 +111,8 @@ export class TfLite {
     let res = JSON.parse(window._kaia.tfLiteClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
+    this._resolveFunc = null;
+    this._rejectFunc = null;
   }
 }
 

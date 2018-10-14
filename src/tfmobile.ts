@@ -111,6 +111,8 @@ export class TfMobile {
     let res = JSON.parse(window._kaia.tfMobileClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
+    this._resolveFunc = null;
+    this._rejectFunc = null;
   }
 }
 

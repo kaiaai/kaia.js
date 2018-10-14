@@ -16,10 +16,10 @@
  */
 
 export class PocketSphinx {
-  readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _configured: boolean = false;
+  _closed: boolean = false;
 
   constructor() {
 
@@ -28,16 +28,12 @@ export class PocketSphinx {
 
     if (window._kaia.pocketSphinx === undefined) {
       window._kaia.pocketSphinx = function () {};
-      window._kaia.pocketSphinx.engine = [];
       window._kaia.pocketSphinx.cb = function (jsonString: string) {
+console.log(jsonString);
         const opRes = JSON.parse(unescape(jsonString));
-        let obj = window._kaia.pocketSphinx.engine[opRes.handle];
-        opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
+        opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
       };
     }
-
-    window._kaia.pocketSphinx.engine.push(this);
-    this._handle = window._kaia.pocketSphinx.engine.length - 1;
   }
 
   configure(params: any, model: ArrayBuffer): Promise<any> {
@@ -48,7 +44,6 @@ export class PocketSphinx {
     // Must use Chrome
     const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
     params = params || {};
-    params.handle = this._handle;
 
     let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
@@ -57,7 +52,6 @@ export class PocketSphinx {
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.pocketSphinx.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -80,7 +74,6 @@ export class PocketSphinx {
     params = params || {active: true};
     if (typeof params == 'boolean')
       params = {active: params};
-    params.handle = this._handle;
 
     let res = JSON.parse(window._kaia.pocketSphinxListen(JSON.stringify(params)));
     return this._makePromise(res);
@@ -94,20 +87,20 @@ export class PocketSphinx {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.pocketSphinx.engine[this._handle] = this;
     return promise;
   }
 
   isClosed(): boolean {
-    return window._kaia.pocketSphinx.engine[this._handle] === null;
+    return this._closed;
   }
 
   close(): void {
-    let params = { handle: this._handle };
-    window._kaia.pocketSphinx.engine[this._handle] = null;
-    let res = JSON.parse(window._kaia.pocketSphinxClose(JSON.stringify(params)));
+    this._closed = true;
+    let res = JSON.parse(window._kaia.pocketSphinxClose());
     if (res.err)
       throw(res.err);
+    this._resolveFunc = null;
+    this._rejectFunc = null;
   }
 }
 
