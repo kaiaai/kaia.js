@@ -40,7 +40,7 @@ export class TfMobile {
     this._handle = window._kaia.tfMobile.engine.length - 1;
   }
 
-  loadModel(model: ArrayBuffer, params: any): Promise<any> {
+  init(model: ArrayBuffer, params: any): Promise<any> {
     if (this._modelLoaded)
       throw("Model already loaded");
     this._modelLoaded = true;
@@ -118,7 +118,7 @@ export class TfMobile {
 
 export async function createTfMobile(model: ArrayBuffer, params: any) {
   const tfMobile = new TfMobile();
-  const res = await tfMobile.loadModel(model, params || {});
+  const res = await tfMobile.init(model, params || {});
   if (typeof res === "string")
     throw(res);
   return tfMobile;

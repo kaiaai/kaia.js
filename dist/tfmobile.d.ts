@@ -20,7 +20,7 @@ export declare class TfMobile {
     _rejectFunc: Function | null;
     _modelLoaded: boolean;
     constructor();
-    loadModel(model: ArrayBuffer, params: any): Promise<any>;
+    init(model: ArrayBuffer, params: any): Promise<any>;
     _clearCallback(): void;
     _resolve(res: any): void;
     _reject(err: any): void;

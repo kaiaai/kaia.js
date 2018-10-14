@@ -40,7 +40,7 @@ export class TfLite {
     this._handle = window._kaia.tfLite.engine.length - 1;
   }
 
-  loadModel(model: ArrayBuffer, params: any): Promise<any> {
+  init(model: ArrayBuffer, params: any): Promise<any> {
     if (this._modelLoaded)
       throw("Model already loaded");
     this._modelLoaded = true;
@@ -118,7 +118,7 @@ export class TfLite {
 
 export async function createTfLite(model: ArrayBuffer, params: any) {
   const tfLite = new TfLite();
-  const res = await tfLite.loadModel(model, params || {});
+  const res = await tfLite.init(model, params || {});
   if (typeof res === "string")
     throw(res);
   return tfLite;

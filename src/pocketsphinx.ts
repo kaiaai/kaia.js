@@ -18,8 +18,9 @@
 export class PocketSphinx {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _configured: boolean = false;
+  _modelLoaded: boolean = false;
   _closed: boolean = false;
+  _listener: Function | null = null;
 
   constructor() {
 
@@ -32,20 +33,30 @@ export class PocketSphinx {
 console.log(jsonString);
         const opRes = JSON.parse(unescape(jsonString));
         opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
+        this._listener(opRes.err, opRes);
       };
     }
   }
 
-  configure(params: any, model: ArrayBuffer): Promise<any> {
-    if (this._configured)
-      throw("Already configured");
-    this._configured = true;
+  init(params: any, model: ArrayBuffer): Promise<any> {
+    if (this._modelLoaded)
+      throw("Model already loaded");
+    this._modelLoaded = true;
 
     // Must use Chrome
     const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
     params = params || {};
 
     let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), modelDecoded));
+    return this._makePromise(res);
+  }
+
+  addSearch(params: any, model: ArrayBuffer): Promise<any> {
+    // Must use Chrome
+    const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
+    params = params || {};
+
+    let res = JSON.parse(window._kaia.pocketSphinxAddSearch(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
   }
 
@@ -101,12 +112,17 @@ console.log(jsonString);
       throw(res.err);
     this._resolveFunc = null;
     this._rejectFunc = null;
+    this._listener = null;
+  }
+
+  setListener(listener: Function | null): void {
+    this._listener = listener;
   }
 }
 
 export async function createPocketSphinx(params: any, model: ArrayBuffer) {
   const pocketSphinx = new PocketSphinx();
-  const res = await pocketSphinx.configure(params || {}, model);
+  const res = await pocketSphinx.init(params || {}, model);
   if (typeof res === "string")
     throw(res);
   return pocketSphinx;
