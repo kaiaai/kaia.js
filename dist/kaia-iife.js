@@ -95,8 +95,7 @@ class TfMobile {
         let res = JSON.parse(window._kaia.tfMobileClose(JSON.stringify(params)));
         if (res.err)
             throw (res.err);
-        this._resolveFunc = null;
-        this._rejectFunc = null;
+        this._clearCallback();
     }
 }
 async function createTfMobile(model, params) {
@@ -201,8 +200,7 @@ class TfLite {
         let res = JSON.parse(window._kaia.tfLiteClose(JSON.stringify(params)));
         if (res.err)
             throw (res.err);
-        this._resolveFunc = null;
-        this._rejectFunc = null;
+        this._clearCallback();
     }
 }
 async function createTfLite(model, params) {
@@ -243,19 +241,23 @@ class PocketSphinx {
             window._kaia.pocketSphinx.cb = function (jsonString) {
                 console.log(jsonString);
                 const opRes = JSON.parse(unescape(jsonString));
-                opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
+                if (opRes.event === "init" && (this._rejectFunc != null) && (this._resolveFunc != null))
+                    opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
                 this._listener(opRes.err, opRes);
             };
         }
     }
-    init(params, model) {
+    init(params) {
         if (this._modelLoaded)
             throw ("Model already loaded");
         this._modelLoaded = true;
+        params = params || {};
+        const model = params.modelZip;
+        // check it's ArrayBuffer
+        delete params.modelZip;
         // Must use Chrome
         const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
-        params = params || {};
-        let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), modelDecoded));
+        let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), modelDecoded, ['abc', 'def']));
         return this._makePromise(res);
     }
     addSearch(params, model) {
@@ -307,17 +309,16 @@ class PocketSphinx {
         let res = JSON.parse(window._kaia.pocketSphinxClose());
         if (res.err)
             throw (res.err);
-        this._resolveFunc = null;
-        this._rejectFunc = null;
+        this._clearCallback();
         this._listener = null;
     }
     setListener(listener) {
         this._listener = listener;
     }
 }
-async function createPocketSphinx(params, model) {
+async function createPocketSphinx(params) {
     const pocketSphinx = new PocketSphinx();
-    const res = await pocketSphinx.init(params || {}, model);
+    const res = await pocketSphinx.init(params || {});
     if (typeof res === "string")
         throw (res);
     return pocketSphinx;

@@ -21,7 +21,7 @@ export declare class PocketSphinx {
     _closed: boolean;
     _listener: Function | null;
     constructor();
-    init(params: any, model: ArrayBuffer): Promise<any>;
+    init(params: any): Promise<any>;
     addSearch(params: any, model: ArrayBuffer): Promise<any>;
     _clearCallback(): void;
     _resolve(res: any): void;
@@ -32,4 +32,4 @@ export declare class PocketSphinx {
     close(): void;
     setListener(listener: Function | null): void;
 }
-export declare function createPocketSphinx(params: any, model: ArrayBuffer): Promise<PocketSphinx>;
+export declare function createPocketSphinx(params: any): Promise<PocketSphinx>;
