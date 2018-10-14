@@ -18,7 +18,7 @@
 export class PocketSphinx {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _modelLoaded: boolean = false;
+  _initialized: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
@@ -40,9 +40,9 @@ console.log(jsonString);
   }
 
   init(params: any): Promise<any> {
-    if (this._modelLoaded)
+    if (this._initialized)
       throw("Model already loaded");
-    this._modelLoaded = true;
+    this._initialized = true;
 
     params = params || {};
     const model = params.modelZip;

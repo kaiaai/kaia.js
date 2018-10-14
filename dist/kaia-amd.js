@@ -230,7 +230,7 @@ class PocketSphinx {
     constructor() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._modelLoaded = false;
+        this._initialized = false;
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
@@ -247,9 +247,9 @@ class PocketSphinx {
         }
     }
     init(params) {
-        if (this._modelLoaded)
+        if (this._initialized)
             throw ("Model already loaded");
-        this._modelLoaded = true;
+        this._initialized = true;
         params = params || {};
         const model = params.modelZip;
         // check it's ArrayBuffer
