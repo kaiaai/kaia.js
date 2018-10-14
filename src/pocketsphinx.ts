@@ -34,7 +34,8 @@ console.log(jsonString);
         const opRes = JSON.parse(unescape(jsonString));
         if (opRes.event === "init" && (this._rejectFunc != null) && (this._resolveFunc != null))
           opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
-        this._listener(opRes.err, opRes);
+        if (this._listener != null)
+          this._listener(opRes.err, opRes);
       };
     }
   }
