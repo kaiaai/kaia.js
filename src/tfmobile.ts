@@ -31,7 +31,7 @@ export class TfMobile {
       window._kaia.tfMobile.engine = [];
       window._kaia.tfMobile.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        let obj = window._kaia.tfMobile.engine[opRes.handle];
+        const obj = window._kaia.tfMobile.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
     }

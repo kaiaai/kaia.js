@@ -28,7 +28,7 @@ class TfMobile {
             window._kaia.tfMobile.engine = [];
             window._kaia.tfMobile.cb = function (jsonString) {
                 const opRes = JSON.parse(unescape(jsonString));
-                let obj = window._kaia.tfMobile.engine[opRes.handle];
+                const obj = window._kaia.tfMobile.engine[opRes.handle];
                 opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
             };
         }
@@ -237,15 +237,19 @@ class PocketSphinx {
             throw ('kaia.js requires Android Kaia.ai app to run');
         if (window._kaia.pocketSphinx === undefined) {
             window._kaia.pocketSphinx = function () { };
+            window._kaia.pocketSphinx.engine = [];
             window._kaia.pocketSphinx.cb = function (jsonString) {
                 console.log(jsonString);
                 const opRes = JSON.parse(unescape(jsonString));
+                const obj = window._kaia.pocketSphinx.engine[0];
                 if (opRes.event === "init" && (this._rejectFunc != null) && (this._resolveFunc != null))
                     opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
                 if (this._listener != null)
                     this._listener(opRes.err, opRes);
             };
         }
+        window._kaia.pocketSphinx.engine.push(this);
+        this._handle = window._kaia.pocketSphinx.engine.length - 1;
     }
     init(params) {
         if (this._initialized)
@@ -270,6 +274,7 @@ class PocketSphinx {
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
+        window._kaia.pocketSphinx.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -302,6 +307,7 @@ class PocketSphinx {
             this._rejectFunc = reject;
         });
         console.log('Made promise ' + JSON.stringify(promise));
+        window._kaia.pocketSphinx.engine[this._handle] = this;
         return promise;
     }
     isClosed() {

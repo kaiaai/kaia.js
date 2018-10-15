@@ -16,6 +16,7 @@
  */
 
 export class PocketSphinx {
+   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _initialized: boolean = false;
@@ -29,15 +30,19 @@ export class PocketSphinx {
 
     if (window._kaia.pocketSphinx === undefined) {
       window._kaia.pocketSphinx = function () {};
+      window._kaia.pocketSphinx.engine = [];
       window._kaia.pocketSphinx.cb = function (jsonString: string) {
 console.log(jsonString);
         const opRes = JSON.parse(unescape(jsonString));
+        const obj = window._kaia.pocketSphinx.engine[0];
         if (opRes.event === "init" && (this._rejectFunc != null) && (this._resolveFunc != null))
           opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
         if (this._listener != null)
           this._listener(opRes.err, opRes);
       };
     }
+    window._kaia.pocketSphinx.engine.push(this);
+    this._handle = window._kaia.pocketSphinx.engine.length - 1;
   }
 
   init(params: any): Promise<any> {
@@ -69,6 +74,7 @@ console.log(jsonString);
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
+    window._kaia.pocketSphinx.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -107,6 +113,7 @@ console.log('Making promise');
       this._rejectFunc = reject;
     });
 console.log('Made promise ' + JSON.stringify(promise));
+    window._kaia.pocketSphinx.engine[this._handle] = this;
     return promise;
   }
 

@@ -15,6 +15,7 @@
  * =============================================================================
  */
 export declare class PocketSphinx {
+    readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
     _initialized: boolean;
