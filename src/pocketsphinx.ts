@@ -98,6 +98,7 @@ console.log(jsonString);
   }
 
   _makePromise(res: any): Promise<any> {
+console.log('Making promise');
     if (res.err)
       throw(res.err);
 
@@ -105,6 +106,7 @@ console.log(jsonString);
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
+console.log('Made promise ' + JSON.stringify(promise));
     return promise;
   }
 

@@ -296,12 +296,14 @@ class PocketSphinx {
         return this._makePromise(res);
     }
     _makePromise(res) {
+        console.log('Making promise');
         if (res.err)
             throw (res.err);
         let promise = new Promise((resolve, reject) => {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
+        console.log('Made promise ' + JSON.stringify(promise));
         return promise;
     }
     isClosed() {
