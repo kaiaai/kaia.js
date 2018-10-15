@@ -121,7 +121,7 @@ console.log(jsonString);
     this._listener = null;
   }
 
-  setListener(listener: Function | null): void {
+  setEventListener(listener: Function | null): void {
     this._listener = listener;
   }
 }

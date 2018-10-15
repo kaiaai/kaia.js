@@ -30,6 +30,6 @@ export declare class PocketSphinx {
     _makePromise(res: any): Promise<any>;
     isClosed(): boolean;
     close(): void;
-    setListener(listener: Function | null): void;
+    setEventListener(listener: Function | null): void;
 }
 export declare function createPocketSphinx(params: any): Promise<PocketSphinx>;

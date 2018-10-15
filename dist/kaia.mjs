@@ -311,7 +311,7 @@ class PocketSphinx {
         this._clearCallback();
         this._listener = null;
     }
-    setListener(listener) {
+    setEventListener(listener) {
         this._listener = listener;
     }
 }
