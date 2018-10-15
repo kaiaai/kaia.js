@@ -286,9 +286,10 @@ class PocketSphinx {
     listen(params) {
         if (this.isClosed())
             throw ('PocketSphinx instance has been closed');
-        params = params || { active: true };
-        if (typeof params == 'boolean')
-            params = { active: params };
+        if (params == undefined)
+            params = { cmd: "listen" };
+        else if (typeof params == 'boolean')
+            params = params ? { cmd: "listen" } : { cmd: "cancel" };
         let res = JSON.parse(window._kaia.pocketSphinxListen(JSON.stringify(params)));
         return this._makePromise(res);
     }
