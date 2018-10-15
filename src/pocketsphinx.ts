@@ -20,6 +20,7 @@ export class PocketSphinx {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _initialized: boolean = false;
+  static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
@@ -35,14 +36,19 @@ export class PocketSphinx {
 console.log(jsonString);
         const opRes = JSON.parse(unescape(jsonString));
         const obj = window._kaia.pocketSphinx.engine[0];
-        if (opRes.event === "init" && (this._rejectFunc != null) && (this._resolveFunc != null))
-          opRes.err ? this._rejectFunc(opRes.err) : this._resolveFunc(opRes);
-        if (this._listener != null)
-          this._listener(opRes.err, opRes);
+        if (opRes.event === "init" && (obj._rejectFunc != null) && (obj._resolveFunc != null))
+          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
+        if (obj._listener != null)
+          obj._listener(opRes.err, opRes);
       };
     }
+
+    if (PocketSphinx._created)
+      throw('Only one instance allowed');
+
     window._kaia.pocketSphinx.engine.push(this);
     this._handle = window._kaia.pocketSphinx.engine.length - 1;
+    PocketSphinx._created = true;
   }
 
   init(params: any): Promise<any> {

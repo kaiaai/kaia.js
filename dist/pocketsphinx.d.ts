@@ -19,6 +19,7 @@ export declare class PocketSphinx {
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
     _initialized: boolean;
+    static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
     constructor();
