@@ -251,7 +251,7 @@ class PocketSphinx {
     }
     init(params) {
         if (this._initialized)
-            throw ("Model already loaded");
+            throw ("Already initialized");
         this._initialized = true;
         params = params || {};
         const model = params.modelZip;

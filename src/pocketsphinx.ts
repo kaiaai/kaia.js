@@ -42,7 +42,7 @@ console.log(jsonString);
 
   init(params: any): Promise<any> {
     if (this._initialized)
-      throw("Model already loaded");
+      throw("Already initialized");
     this._initialized = true;
 
     params = params || {};
