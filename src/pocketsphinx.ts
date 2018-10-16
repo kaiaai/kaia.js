@@ -80,13 +80,15 @@ export class PocketSphinx {
       throw("Already initialized");
     this._initialized = true;
 
-    const data = this._extractArrayBufs(params || {});
+    params = params || {};
+    const data = this._extractArrayBufs(params);
     let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), data));
     return this._makePromise(res);
   }
 
   addSearch(params: any): Promise<any> {
-    const data = this._extractArrayBufs(params || {});
+    params = params || {};
+    const data = this._extractArrayBufs(params);
     let res = JSON.parse(window._kaia.pocketSphinxAddSearch(JSON.stringify(params), data));
     return this._makePromise(res);
   }
