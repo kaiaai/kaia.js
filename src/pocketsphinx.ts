@@ -50,29 +50,44 @@ export class PocketSphinx {
     PocketSphinx._created = true;
   }
 
+  _extractArrayBufs(params: any): any[] {
+    const data:any[] = [];
+    const fileNames:any[] = [];
+
+    const textDecoder = new TextDecoder("iso-8859-1");
+
+    if (params.searchFile) {
+      if (!Array.isArray(params.searchFile))
+        throw "searchFile must be an array";
+      params.searchFile.forEach((item:any) => {
+        fileNames.push(item.fileName);
+        // Must use Chrome
+        data.push(textDecoder.decode(item.file || ''));
+      });
+    }
+    params.searchFile = fileNames;
+
+    // TODO check it's ArrayBuffer
+    if (params.modelZip) {
+      data.push(textDecoder.decode(params.modelZip));
+      delete params.modelZip;
+    }
+    return data;
+  }
+
   init(params: any): Promise<any> {
     if (this._initialized)
       throw("Already initialized");
     this._initialized = true;
 
-    params = params || {};
-    const model = params.modelZip;
-    // check it's ArrayBuffer
-    delete params.modelZip;
-
-    // Must use Chrome
-    const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
-
-    let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), modelDecoded, ['abc','def']));
+    const data = this._extractArrayBufs(params || {});
+    let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), data));
     return this._makePromise(res);
   }
 
-  addSearch(params: any, model: ArrayBuffer): Promise<any> {
-    // Must use Chrome
-    const modelDecoded = model ? (new TextDecoder("iso-8859-1").decode(model)) : '';
-    params = params || {};
-
-    let res = JSON.parse(window._kaia.pocketSphinxAddSearch(JSON.stringify(params), modelDecoded));
+  addSearch(params: any): Promise<any> {
+    const data = this._extractArrayBufs(params || {});
+    let res = JSON.parse(window._kaia.pocketSphinxAddSearch(JSON.stringify(params), data));
     return this._makePromise(res);
   }
 

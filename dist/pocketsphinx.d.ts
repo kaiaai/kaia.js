@@ -23,8 +23,9 @@ export declare class PocketSphinx {
     _closed: boolean;
     _listener: Function | null;
     constructor();
+    _extractArrayBufs(params: any): any[];
     init(params: any): Promise<any>;
-    addSearch(params: any, model: ArrayBuffer): Promise<any>;
+    addSearch(params: any): Promise<any>;
     _clearCallback(): void;
     _resolve(res: any): void;
     _reject(err: any): void;
