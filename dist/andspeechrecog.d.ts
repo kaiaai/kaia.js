@@ -14,7 +14,23 @@
  * limitations under the License.
  * =============================================================================
  */
-export * from './tfmobile';
-export * from './tflite';
-export * from './pocketsphinx';
-export * from './andspeechrecog';
+export declare class AndroidSpeechRecognizer {
+    readonly _handle: number;
+    _resolveFunc: Function | null;
+    _rejectFunc: Function | null;
+    _initialized: boolean;
+    static _created: boolean;
+    _closed: boolean;
+    _listener: Function | null;
+    constructor();
+    init(params: any): Promise<any>;
+    _clearCallback(): void;
+    _resolve(res: any): void;
+    _reject(err: any): void;
+    listen(params: any): Promise<any>;
+    _makePromise(res: any): Promise<any>;
+    isClosed(): boolean;
+    close(): void;
+    setEventListener(listener: Function | null): void;
+}
+export declare function createAndroidSpeechRecognizer(params: any): Promise<AndroidSpeechRecognizer>;
