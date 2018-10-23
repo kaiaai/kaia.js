@@ -14,8 +14,23 @@
  * limitations under the License.
  * =============================================================================
  */
-export * from './tfmobile';
-export * from './tflite';
-export * from './pocketsphinx';
-export * from './andspeechrecog';
-export * from './andmultidetect';
+export declare class AndroidMultiDetect {
+    readonly _handle: number;
+    _resolveFunc: Function | null;
+    _rejectFunc: Function | null;
+    _initialized: boolean;
+    static _created: boolean;
+    _closed: boolean;
+    _listener: Function | null;
+    constructor();
+    init(params: any): Promise<any>;
+    _clearCallback(): void;
+    _resolve(res: any): void;
+    _reject(err: any): void;
+    detect(params: any): Promise<any>;
+    _makePromise(res: any): Promise<any>;
+    isClosed(): boolean;
+    close(): void;
+    setEventListener(listener: Function | null): void;
+}
+export declare function createAndroidMultiDetect(params: any): Promise<AndroidMultiDetect>;

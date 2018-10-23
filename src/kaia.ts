@@ -19,3 +19,4 @@ export * from './tfmobile';
 export * from './tflite';
 export * from './pocketsphinx';
 export * from './andspeechrecog';
+export * from './andmultidetect';
