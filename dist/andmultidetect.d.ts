@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-export declare class AndroidMultiDetect {
+export declare class AndroidMultiDetector {
     readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
@@ -33,4 +33,4 @@ export declare class AndroidMultiDetect {
     close(): void;
     setEventListener(listener: Function | null): void;
 }
-export declare function createAndroidMultiDetect(params: any): Promise<AndroidMultiDetect>;
+export declare function createAndroidMultiDetector(params: any): Promise<AndroidMultiDetector>;
