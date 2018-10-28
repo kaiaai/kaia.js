@@ -15,7 +15,7 @@
  * =============================================================================
  */
 
-export class TfMobile {
+export class TensorFlowMobile {
   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
@@ -26,18 +26,18 @@ export class TfMobile {
     if (window._kaia === undefined)
       throw('kaia.js requires Android Kaia.ai app to run');
 
-    if (window._kaia.tfMobile === undefined) {
-      window._kaia.tfMobile = function () {};
-      window._kaia.tfMobile.engine = [];
-      window._kaia.tfMobile.cb = function (jsonString: string) {
+    if (window._kaia.tensorFlowMobile === undefined) {
+      window._kaia.tensorFlowMobile = function () {};
+      window._kaia.tensorFlowMobile.engine = [];
+      window._kaia.tensorFlowMobile.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        const obj = window._kaia.tfMobile.engine[opRes.handle];
+        const obj = window._kaia.tensorFlowMobile.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
     }
 
-    window._kaia.tfMobile.engine.push(this);
-    this._handle = window._kaia.tfMobile.engine.length - 1;
+    window._kaia.tensorFlowMobile.engine.push(this);
+    this._handle = window._kaia.tensorFlowMobile.engine.length - 1;
   }
 
   init(model: ArrayBuffer, params: any): Promise<any> {
@@ -51,14 +51,14 @@ export class TfMobile {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfMobileInit(JSON.stringify(params), modelDecoded));
+    let res = JSON.parse(window._kaia.tensorFlowMobileInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.tfMobile.engine[this._handle] = null;
+    window._kaia.tensorFlowMobile.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -77,7 +77,7 @@ export class TfMobile {
 
   run(data: ArrayBuffer[], params: any): Promise<any> {
     if (this.isClosed())
-      throw('TfMobile instance has been closed');
+      throw('TensorFlowMobile instance has been closed');
     const textDecoder = new TextDecoder("iso-8859-1");
     let dataDecoded = [];
     for (let i = 0; i < data.length; i++)
@@ -85,7 +85,7 @@ export class TfMobile {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfMobileRun(JSON.stringify(params), dataDecoded));
+    let res = JSON.parse(window._kaia.tensorFlowMobileRun(JSON.stringify(params), dataDecoded));
     return this._makePromise(res);
   }
 
@@ -97,26 +97,26 @@ export class TfMobile {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.tfMobile.engine[this._handle] = this;
+    window._kaia.tensorFlowMobile.engine[this._handle] = this;
     return promise;
   }
 
   isClosed(): boolean {
-    return window._kaia.tfMobile.engine[this._handle] === null;
+    return window._kaia.tensorFlowMobile.engine[this._handle] === null;
   }
 
   close(): void {
     let params = { handle: this._handle };
-    window._kaia.tfMobile.engine[this._handle] = null;
-    let res = JSON.parse(window._kaia.tfMobileClose(JSON.stringify(params)));
+    window._kaia.tensorFlowMobile.engine[this._handle] = null;
+    let res = JSON.parse(window._kaia.tensorFlowMobileClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
     this._clearCallback();
   }
 }
 
-export async function createTfMobile(model: ArrayBuffer, params: any) {
-  const tfMobile = new TfMobile();
+export async function createTensorFlowMobile(model: ArrayBuffer, params: any) {
+  const tfMobile = new TensorFlowMobile();
   const res = await tfMobile.init(model, params || {});
   if (typeof res === "string")
     throw(res);

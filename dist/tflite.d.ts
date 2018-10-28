@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-export declare class TfLite {
+export declare class TensorFlowLite {
     readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
@@ -29,4 +29,4 @@ export declare class TfLite {
     isClosed(): boolean;
     close(): void;
 }
-export declare function createTfLite(model: ArrayBuffer, params: any): Promise<TfLite>;
+export declare function createTensorFlowLite(model: ArrayBuffer, params: any): Promise<TensorFlowLite>;

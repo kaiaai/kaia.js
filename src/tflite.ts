@@ -15,7 +15,7 @@
  * =============================================================================
  */
 
-export class TfLite {
+export class TensorFlowLite {
   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
@@ -26,18 +26,18 @@ export class TfLite {
     if (window._kaia === undefined)
       throw('kaia.js requires Android Kaia.ai app to run');
 
-    if (window._kaia.tfLite === undefined) {
-      window._kaia.tfLite = function () {};
-      window._kaia.tfLite.engine = [];
-      window._kaia.tfLite.cb = function (jsonString: string) {
+    if (window._kaia.tensorFlowLite === undefined) {
+      window._kaia.tensorFlowLite = function () {};
+      window._kaia.tensorFlowLite.engine = [];
+      window._kaia.tensorFlowLite.cb = function (jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        let obj = window._kaia.tfLite.engine[opRes.handle];
+        let obj = window._kaia.tensorFlowLite.engine[opRes.handle];
         opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
       };
     }
 
-    window._kaia.tfLite.engine.push(this);
-    this._handle = window._kaia.tfLite.engine.length - 1;
+    window._kaia.tensorFlowLite.engine.push(this);
+    this._handle = window._kaia.tensorFlowLite.engine.length - 1;
   }
 
   init(model: ArrayBuffer, params: any): Promise<any> {
@@ -51,14 +51,14 @@ export class TfLite {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfLiteInit(JSON.stringify(params), modelDecoded));
+    let res = JSON.parse(window._kaia.tensorFlowLiteInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.tfLite.engine[this._handle] = null;
+    window._kaia.tensorFlowLite.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -77,7 +77,7 @@ export class TfLite {
 
   run(data: ArrayBuffer[], params: any): Promise<any> {
     if (this.isClosed())
-      throw('TfLite instance has been closed');
+      throw('TensorFlowLite instance has been closed');
     const textDecoder = new TextDecoder("iso-8859-1");
     let dataDecoded = [];
     for (let i = 0; i < data.length; i++)
@@ -85,7 +85,7 @@ export class TfLite {
     params = params || {};
     params.handle = this._handle;
 
-    let res = JSON.parse(window._kaia.tfLiteRun(JSON.stringify(params), dataDecoded));
+    let res = JSON.parse(window._kaia.tensorFlowLiteRun(JSON.stringify(params), dataDecoded));
     return this._makePromise(res);
   }
 
@@ -97,26 +97,26 @@ export class TfLite {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.tfLite.engine[this._handle] = this;
+    window._kaia.tensorFlowLite.engine[this._handle] = this;
     return promise;
   }
 
   isClosed(): boolean {
-    return window._kaia.tfLite.engine[this._handle] === null;
+    return window._kaia.tensorFlowLite.engine[this._handle] === null;
   }
 
   close(): void {
     let params = { handle: this._handle };
-    window._kaia.tfLite.engine[this._handle] = null;
-    let res = JSON.parse(window._kaia.tfLiteClose(JSON.stringify(params)));
+    window._kaia.tensorFlowLite.engine[this._handle] = null;
+    let res = JSON.parse(window._kaia.tensorFlowLiteClose(JSON.stringify(params)));
     if (res.err)
       throw(res.err);
     this._clearCallback();
   }
 }
 
-export async function createTfLite(model: ArrayBuffer, params: any) {
-  const tfLite = new TfLite();
+export async function createTensorFlowLite(model: ArrayBuffer, params: any) {
+  const tfLite = new TensorFlowLite();
   const res = await tfLite.init(model, params || {});
   if (typeof res === "string")
     throw(res);

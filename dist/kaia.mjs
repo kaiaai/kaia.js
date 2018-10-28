@@ -14,24 +14,24 @@
  * limitations under the License.
  * =============================================================================
  */
-class TfMobile {
+class TensorFlowMobile {
     constructor() {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._modelLoaded = false;
         if (window._kaia === undefined)
             throw ('kaia.js requires Android Kaia.ai app to run');
-        if (window._kaia.tfMobile === undefined) {
-            window._kaia.tfMobile = function () { };
-            window._kaia.tfMobile.engine = [];
-            window._kaia.tfMobile.cb = function (jsonString) {
+        if (window._kaia.tensorFlowMobile === undefined) {
+            window._kaia.tensorFlowMobile = function () { };
+            window._kaia.tensorFlowMobile.engine = [];
+            window._kaia.tensorFlowMobile.cb = function (jsonString) {
                 const opRes = JSON.parse(unescape(jsonString));
-                const obj = window._kaia.tfMobile.engine[opRes.handle];
+                const obj = window._kaia.tensorFlowMobile.engine[opRes.handle];
                 opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
             };
         }
-        window._kaia.tfMobile.engine.push(this);
-        this._handle = window._kaia.tfMobile.engine.length - 1;
+        window._kaia.tensorFlowMobile.engine.push(this);
+        this._handle = window._kaia.tensorFlowMobile.engine.length - 1;
     }
     init(model, params) {
         if (this._modelLoaded)
@@ -41,13 +41,13 @@ class TfMobile {
         const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfMobileInit(JSON.stringify(params), modelDecoded));
+        let res = JSON.parse(window._kaia.tensorFlowMobileInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.tfMobile.engine[this._handle] = null;
+        window._kaia.tensorFlowMobile.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -63,14 +63,14 @@ class TfMobile {
     }
     run(data, params) {
         if (this.isClosed())
-            throw ('TfMobile instance has been closed');
+            throw ('TensorFlowMobile instance has been closed');
         const textDecoder = new TextDecoder("iso-8859-1");
         let dataDecoded = [];
         for (let i = 0; i < data.length; i++)
             dataDecoded[i] = textDecoder.decode(data[i]);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfMobileRun(JSON.stringify(params), dataDecoded));
+        let res = JSON.parse(window._kaia.tensorFlowMobileRun(JSON.stringify(params), dataDecoded));
         return this._makePromise(res);
     }
     _makePromise(res) {
@@ -80,23 +80,23 @@ class TfMobile {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.tfMobile.engine[this._handle] = this;
+        window._kaia.tensorFlowMobile.engine[this._handle] = this;
         return promise;
     }
     isClosed() {
-        return window._kaia.tfMobile.engine[this._handle] === null;
+        return window._kaia.tensorFlowMobile.engine[this._handle] === null;
     }
     close() {
         let params = { handle: this._handle };
-        window._kaia.tfMobile.engine[this._handle] = null;
-        let res = JSON.parse(window._kaia.tfMobileClose(JSON.stringify(params)));
+        window._kaia.tensorFlowMobile.engine[this._handle] = null;
+        let res = JSON.parse(window._kaia.tensorFlowMobileClose(JSON.stringify(params)));
         if (res.err)
             throw (res.err);
         this._clearCallback();
     }
 }
-async function createTfMobile(model, params) {
-    const tfMobile = new TfMobile();
+async function createTensorFlowMobile(model, params) {
+    const tfMobile = new TensorFlowMobile();
     const res = await tfMobile.init(model, params || {});
     if (typeof res === "string")
         throw (res);
@@ -119,24 +119,24 @@ async function createTfMobile(model, params) {
  * limitations under the License.
  * =============================================================================
  */
-class TfLite {
+class TensorFlowLite {
     constructor() {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._modelLoaded = false;
         if (window._kaia === undefined)
             throw ('kaia.js requires Android Kaia.ai app to run');
-        if (window._kaia.tfLite === undefined) {
-            window._kaia.tfLite = function () { };
-            window._kaia.tfLite.engine = [];
-            window._kaia.tfLite.cb = function (jsonString) {
+        if (window._kaia.tensorFlowLite === undefined) {
+            window._kaia.tensorFlowLite = function () { };
+            window._kaia.tensorFlowLite.engine = [];
+            window._kaia.tensorFlowLite.cb = function (jsonString) {
                 const opRes = JSON.parse(unescape(jsonString));
-                let obj = window._kaia.tfLite.engine[opRes.handle];
+                let obj = window._kaia.tensorFlowLite.engine[opRes.handle];
                 opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
             };
         }
-        window._kaia.tfLite.engine.push(this);
-        this._handle = window._kaia.tfLite.engine.length - 1;
+        window._kaia.tensorFlowLite.engine.push(this);
+        this._handle = window._kaia.tensorFlowLite.engine.length - 1;
     }
     init(model, params) {
         if (this._modelLoaded)
@@ -146,13 +146,13 @@ class TfLite {
         const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfLiteInit(JSON.stringify(params), modelDecoded));
+        let res = JSON.parse(window._kaia.tensorFlowLiteInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.tfLite.engine[this._handle] = null;
+        window._kaia.tensorFlowLite.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -168,14 +168,14 @@ class TfLite {
     }
     run(data, params) {
         if (this.isClosed())
-            throw ('TfLite instance has been closed');
+            throw ('TensorFlowLite instance has been closed');
         const textDecoder = new TextDecoder("iso-8859-1");
         let dataDecoded = [];
         for (let i = 0; i < data.length; i++)
             dataDecoded[i] = textDecoder.decode(data[i]);
         params = params || {};
         params.handle = this._handle;
-        let res = JSON.parse(window._kaia.tfLiteRun(JSON.stringify(params), dataDecoded));
+        let res = JSON.parse(window._kaia.tensorFlowLiteRun(JSON.stringify(params), dataDecoded));
         return this._makePromise(res);
     }
     _makePromise(res) {
@@ -185,23 +185,23 @@ class TfLite {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.tfLite.engine[this._handle] = this;
+        window._kaia.tensorFlowLite.engine[this._handle] = this;
         return promise;
     }
     isClosed() {
-        return window._kaia.tfLite.engine[this._handle] === null;
+        return window._kaia.tensorFlowLite.engine[this._handle] === null;
     }
     close() {
         let params = { handle: this._handle };
-        window._kaia.tfLite.engine[this._handle] = null;
-        let res = JSON.parse(window._kaia.tfLiteClose(JSON.stringify(params)));
+        window._kaia.tensorFlowLite.engine[this._handle] = null;
+        let res = JSON.parse(window._kaia.tensorFlowLiteClose(JSON.stringify(params)));
         if (res.err)
             throw (res.err);
         this._clearCallback();
     }
 }
-async function createTfLite(model, params) {
-    const tfLite = new TfLite();
+async function createTensorFlowLite(model, params) {
+    const tfLite = new TensorFlowLite();
     const res = await tfLite.init(model, params || {});
     if (typeof res === "string")
         throw (res);
@@ -596,4 +596,4 @@ async function createAndroidMultiDetector(params) {
  * =============================================================================
  */
 
-export { TfMobile, createTfMobile, TfLite, createTfLite, PocketSphinx, createPocketSphinx, AndroidSpeechRecognizer, createAndroidSpeechRecognizer, AndroidMultiDetector, createAndroidMultiDetector };
+export { TensorFlowMobile, createTensorFlowMobile, TensorFlowLite, createTensorFlowLite, PocketSphinx, createPocketSphinx, AndroidSpeechRecognizer, createAndroidSpeechRecognizer, AndroidMultiDetector, createAndroidMultiDetector };

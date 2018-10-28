@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-export declare class TfMobile {
+export declare class TensorFlowMobile {
     readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
@@ -29,4 +29,4 @@ export declare class TfMobile {
     isClosed(): boolean;
     close(): void;
 }
-export declare function createTfMobile(model: ArrayBuffer, params: any): Promise<TfMobile>;
+export declare function createTensorFlowMobile(model: ArrayBuffer, params: any): Promise<TensorFlowMobile>;
