@@ -20,3 +20,4 @@ export * from './tflite';
 export * from './pocketsphinx';
 export * from './andspeechrecog';
 export * from './andmultidetect';
+export * from './serial';
