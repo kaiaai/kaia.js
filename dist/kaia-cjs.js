@@ -657,12 +657,6 @@ class Serial {
     write(params) {
         if (this.isClosed())
             throw ('Serial instance has been closed');
-        if (params == undefined)
-            params = { cmd: "listen" };
-        else if (typeof params == 'boolean')
-            params = params ? { cmd: "listen" } : { cmd: "cancel" };
-        else if (typeof params == 'string')
-            params = { cmd: "listen", searchName: params };
         let res = JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
         return this._makePromise(res);
     }
@@ -716,6 +710,135 @@ async function createSerial(params) {
  * limitations under the License.
  * =============================================================================
  */
+class TextToSpeech {
+    constructor() {
+        this._resolveFunc = null;
+        this._rejectFunc = null;
+        this._initialized = false;
+        this._closed = false;
+        this._listener = null;
+        if (window._kaia === undefined)
+            throw ('kaia.js requires Android Kaia.ai app to run');
+        if (window._kaia.textToSpeech === undefined) {
+            window._kaia.textToSpeech = function () { };
+            window._kaia.textToSpeech.engine = [];
+            window._kaia.textToSpeech.cb = function (jsonString) {
+                const opRes = JSON.parse(jsonString);
+                const obj = window._kaia.textToSpeech.engine[0];
+                if (opRes.event === "init") {
+                    if (opRes.err && (obj._rejectFunc != null))
+                        obj._rejectFunc(opRes.err);
+                    else if (!opRes.err && (obj._resolveFunc != null))
+                        obj._resolveFunc(opRes.event);
+                }
+                if (obj._listener != null)
+                    obj._listener(opRes.err, opRes);
+            };
+        }
+        if (TextToSpeech._created)
+            throw ("Only one instance allowed");
+        window._kaia.textToSpeech.engine.push(this);
+        this._handle = window._kaia.textToSpeech.engine.length - 1;
+        TextToSpeech._created = true;
+    }
+    init(params) {
+        if (this._initialized)
+            throw ("Already initialized");
+        this._initialized = true;
+        params = params || {};
+        let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
+        return this._makePromise(res);
+    }
+    _clearCallback() {
+        this._resolveFunc = null;
+        this._rejectFunc = null;
+        window._kaia.textToSpeech.engine[this._handle] = null;
+    }
+    _resolve(res) {
+        let cb = this._resolveFunc;
+        this._clearCallback();
+        if (cb !== null)
+            cb(res);
+    }
+    _reject(err) {
+        let cb = this._rejectFunc;
+        this._clearCallback();
+        if (cb !== null)
+            cb(err);
+    }
+    speak(params) {
+        if (this.isClosed())
+            throw ('TextToSpeech instance has been closed');
+        let res = JSON.parse(window._kaia.textToSpeechSpeak(JSON.stringify(params)));
+        return this._makePromise(res);
+    }
+    configure(params) {
+        if (!params)
+            throw ('Parameters object required');
+        if (this.isClosed())
+            throw ('TextToSpeech instance has been closed');
+        return JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
+    }
+    getConfig() {
+        if (this.isClosed())
+            throw ('TextToSpeech instance has been closed');
+        return JSON.parse(window._kaia.textToSpeechConfigure(''));
+    }
+    _makePromise(res) {
+        if (res.err)
+            throw (res.err);
+        let promise = new Promise((resolve, reject) => {
+            this._resolveFunc = resolve;
+            this._rejectFunc = reject;
+        });
+        window._kaia.textToSpeech.engine[this._handle] = this;
+        return promise;
+    }
+    isClosed() {
+        return this._closed;
+    }
+    close() {
+        this._closed = true;
+        let res = JSON.parse(window._kaia.textToSpeechClose());
+        if (res.err)
+            throw (res.err);
+        this._clearCallback();
+        this._listener = null;
+    }
+    setEventListener(listener) {
+        this._listener = listener;
+    }
+}
+TextToSpeech._created = false;
+async function createTextToSpeech(params) {
+    const textToSpeech = new TextToSpeech();
+    let res = await textToSpeech.init({});
+    if (res !== "init")
+        throw (res);
+    if (params !== undefined) {
+        res = textToSpeech.configure(params);
+        if (res.err)
+            throw (res);
+    }
+    return textToSpeech;
+}
+
+/**
+ * @license
+ * Copyright 2018 OOMWOO LLC. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =============================================================================
+ */
 
 exports.TensorFlowMobile = TensorFlowMobile;
 exports.createTensorFlowMobile = createTensorFlowMobile;
@@ -729,3 +852,5 @@ exports.AndroidMultiDetector = AndroidMultiDetector;
 exports.createAndroidMultiDetector = createAndroidMultiDetector;
 exports.Serial = Serial;
 exports.createSerial = createSerial;
+exports.TextToSpeech = TextToSpeech;
+exports.createTextToSpeech = createTextToSpeech;

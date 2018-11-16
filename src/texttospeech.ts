@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-export class Serial {
+export class TextToSpeech {
    readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
@@ -28,28 +28,29 @@ export class Serial {
     if (window._kaia === undefined)
       throw('kaia.js requires Android Kaia.ai app to run');
 
-    if (window._kaia.serial === undefined) {
-      window._kaia.serial = function () {};
-      window._kaia.serial.engine = [];
-      window._kaia.serial.cb = function (jsonString: string) {
+    if (window._kaia.textToSpeech === undefined) {
+      window._kaia.textToSpeech = function () {};
+      window._kaia.textToSpeech.engine = [];
+      window._kaia.textToSpeech.cb = function (jsonString: string) {
         const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.serial.engine[0];
-        if (opRes.event === "serialUsbReady" && (obj._resolveFunc != null))
-          obj._resolveFunc(opRes.event);
-        if ((opRes.event === "usbNotSupported" || opRes.event === "usbDeviceNotWorking" ||
-          opRes.event === "cdcDriverNotWorking") && (obj._rejectFunc != null))
-          obj._rejectFunc(opRes.event);
+        const obj = window._kaia.textToSpeech.engine[0];
+        if (opRes.event === "init") {
+          if (opRes.err && (obj._rejectFunc != null))
+            obj._rejectFunc(opRes.err);
+          else if (!opRes.err && (obj._resolveFunc != null))
+            obj._resolveFunc(opRes.event);
+        }
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
 
-    if (Serial._created)
-      throw('Only one instance allowed');
+    if (TextToSpeech._created)
+      throw("Only one instance allowed");
 
-    window._kaia.serial.engine.push(this);
-    this._handle = window._kaia.serial.engine.length - 1;
-    Serial._created = true;
+    window._kaia.textToSpeech.engine.push(this);
+    this._handle = window._kaia.textToSpeech.engine.length - 1;
+    TextToSpeech._created = true;
   }
 
   init(params: any): Promise<any> {
@@ -58,14 +59,14 @@ export class Serial {
     this._initialized = true;
 
     params = params || {};
-    let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.serial.engine[this._handle] = null;
+    window._kaia.textToSpeech.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -82,12 +83,28 @@ export class Serial {
       cb(err);
   }
 
-  write(params: any): Promise<any> {
+  speak(params: any): Promise<any> {
     if (this.isClosed())
-      throw('Serial instance has been closed');
+      throw('TextToSpeech instance has been closed');
 
-    let res = JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
+    let res = JSON.parse(window._kaia.textToSpeechSpeak(JSON.stringify(params)));
     return this._makePromise(res);
+  }
+
+  configure(params: any): any {
+    if (!params)
+      throw('Parameters object required');
+    if (this.isClosed())
+      throw('TextToSpeech instance has been closed');
+
+    return JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
+  }
+
+  getConfig(): any {
+    if (this.isClosed())
+      throw('TextToSpeech instance has been closed');
+
+    return JSON.parse(window._kaia.textToSpeechConfigure(''));
   }
 
   _makePromise(res: any): Promise<any> {
@@ -98,7 +115,7 @@ export class Serial {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.serial.engine[this._handle] = this;
+    window._kaia.textToSpeech.engine[this._handle] = this;
     return promise;
   }
 
@@ -108,7 +125,7 @@ export class Serial {
 
   close(): void {
     this._closed = true;
-    let res = JSON.parse(window._kaia.serialClose());
+    let res = JSON.parse(window._kaia.textToSpeechClose());
     if (res.err)
       throw(res.err);
     this._clearCallback();
@@ -120,10 +137,15 @@ export class Serial {
   }
 }
 
-export async function createSerial(params: any) {
-  const serial = new Serial();
-  const res = await serial.init(params || {});
-  if (res !== "serialUsbReady")
+export async function createTextToSpeech(params: any) {
+  const textToSpeech = new TextToSpeech();
+  let res = await textToSpeech.init({});
+  if (res !== "init")
     throw(res);
-  return serial;
+  if (params !== undefined) {
+    res = textToSpeech.configure(params);
+    if (res.err)
+      throw(res);
+  }
+  return textToSpeech;
 }

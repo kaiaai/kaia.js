@@ -21,3 +21,4 @@ export * from './pocketsphinx';
 export * from './andspeechrecog';
 export * from './andmultidetect';
 export * from './serial';
+export * from './texttospeech';
