@@ -27,7 +27,7 @@ export declare class Serial {
     _clearCallback(): void;
     _resolve(res: any): void;
     _reject(err: any): void;
-    write(params: any): Promise<any>;
+    write(params: any): any;
     _makePromise(res: any): Promise<any>;
     isClosed(): boolean;
     close(): void;

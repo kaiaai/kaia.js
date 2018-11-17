@@ -26,7 +26,7 @@ export class TextToSpeech {
   constructor() {
 
     if (window._kaia === undefined)
-      throw('kaia.js requires Android Kaia.ai app to run');
+      throw('TextToSpeech requires Android Kaia.ai app to run');
 
     if (window._kaia.textToSpeech === undefined) {
       window._kaia.textToSpeech = function () {};
@@ -34,7 +34,7 @@ export class TextToSpeech {
       window._kaia.textToSpeech.cb = function (jsonString: string) {
         const opRes = JSON.parse(jsonString);
         const obj = window._kaia.textToSpeech.engine[0];
-        if (opRes.event === "init") {
+        if (opRes.event === "init" || opRes.event === "done" || opRes.event === "error") {
           if (opRes.err && (obj._rejectFunc != null))
             obj._rejectFunc(opRes.err);
           else if (!opRes.err && (obj._resolveFunc != null))
@@ -86,6 +86,8 @@ export class TextToSpeech {
   speak(params: any): Promise<any> {
     if (this.isClosed())
       throw('TextToSpeech instance has been closed');
+    if (typeof params === 'string')
+      params = {text: params};
 
     let res = JSON.parse(window._kaia.textToSpeechSpeak(JSON.stringify(params)));
     return this._makePromise(res);
@@ -104,7 +106,7 @@ export class TextToSpeech {
     if (this.isClosed())
       throw('TextToSpeech instance has been closed');
 
-    return JSON.parse(window._kaia.textToSpeechConfigure(''));
+    return JSON.parse(window._kaia.textToSpeechGetConfig(''));
   }
 
   _makePromise(res: any): Promise<any> {

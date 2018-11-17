@@ -22,7 +22,7 @@ class TensorFlowMobile {
         this._rejectFunc = null;
         this._modelLoaded = false;
         if (window._kaia === undefined)
-            throw ('kaia.js requires Android Kaia.ai app to run');
+            throw ('TensorFlowMobile requires Android Kaia.ai app to run');
         if (window._kaia.tensorFlowMobile === undefined) {
             window._kaia.tensorFlowMobile = function () { };
             window._kaia.tensorFlowMobile.engine = [];
@@ -127,7 +127,7 @@ class TensorFlowLite {
         this._rejectFunc = null;
         this._modelLoaded = false;
         if (window._kaia === undefined)
-            throw ('kaia.js requires Android Kaia.ai app to run');
+            throw ('TensorFlowLite requires Android Kaia.ai app to run');
         if (window._kaia.tensorFlowLite === undefined) {
             window._kaia.tensorFlowLite = function () { };
             window._kaia.tensorFlowLite.engine = [];
@@ -234,7 +234,7 @@ class PocketSphinx {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('kaia.js requires Android Kaia.ai app to run');
+            throw ('PocketSphinx requires Android Kaia.ai app to run');
         if (window._kaia.pocketSphinx === undefined) {
             window._kaia.pocketSphinx = function () { };
             window._kaia.pocketSphinx.engine = [];
@@ -487,7 +487,7 @@ class AndroidMultiDetector {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('kaia.js requires Android Kaia.ai app to run');
+            throw ('AndroidMultiDetector requires Android Kaia.ai app to run');
         if (window._kaia.androidMultiDetector === undefined) {
             window._kaia.androidMultiDetector = function () { };
             window._kaia.androidMultiDetector.engine = [];
@@ -605,7 +605,7 @@ class Serial {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('kaia.js requires Android Kaia.ai app to run');
+            throw ('Serial requires Android Kaia.ai app to run');
         if (window._kaia.serial === undefined) {
             window._kaia.serial = function () { };
             window._kaia.serial.engine = [];
@@ -655,8 +655,9 @@ class Serial {
     write(params) {
         if (this.isClosed())
             throw ('Serial instance has been closed');
-        let res = JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
-        return this._makePromise(res);
+        if (typeof params === 'string')
+            params = { message: params };
+        return JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
     }
     _makePromise(res) {
         if (res.err)
@@ -716,14 +717,14 @@ class TextToSpeech {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('kaia.js requires Android Kaia.ai app to run');
+            throw ('TextToSpeech requires Android Kaia.ai app to run');
         if (window._kaia.textToSpeech === undefined) {
             window._kaia.textToSpeech = function () { };
             window._kaia.textToSpeech.engine = [];
             window._kaia.textToSpeech.cb = function (jsonString) {
                 const opRes = JSON.parse(jsonString);
                 const obj = window._kaia.textToSpeech.engine[0];
-                if (opRes.event === "init") {
+                if (opRes.event === "init" || opRes.event === "done" || opRes.event === "error") {
                     if (opRes.err && (obj._rejectFunc != null))
                         obj._rejectFunc(opRes.err);
                     else if (!opRes.err && (obj._resolveFunc != null))
@@ -767,6 +768,8 @@ class TextToSpeech {
     speak(params) {
         if (this.isClosed())
             throw ('TextToSpeech instance has been closed');
+        if (typeof params === 'string')
+            params = { text: params };
         let res = JSON.parse(window._kaia.textToSpeechSpeak(JSON.stringify(params)));
         return this._makePromise(res);
     }
@@ -780,7 +783,7 @@ class TextToSpeech {
     getConfig() {
         if (this.isClosed())
             throw ('TextToSpeech instance has been closed');
-        return JSON.parse(window._kaia.textToSpeechConfigure(''));
+        return JSON.parse(window._kaia.textToSpeechGetConfig(''));
     }
     _makePromise(res) {
         if (res.err)

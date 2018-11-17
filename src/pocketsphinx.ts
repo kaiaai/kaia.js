@@ -27,7 +27,7 @@ export class PocketSphinx {
   constructor() {
 
     if (window._kaia === undefined)
-      throw('kaia.js requires Android Kaia.ai app to run');
+      throw('PocketSphinx requires Android Kaia.ai app to run');
 
     if (window._kaia.pocketSphinx === undefined) {
       window._kaia.pocketSphinx = function () {};

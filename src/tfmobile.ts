@@ -24,7 +24,7 @@ export class TensorFlowMobile {
   constructor() {
 
     if (window._kaia === undefined)
-      throw('kaia.js requires Android Kaia.ai app to run');
+      throw('TensorFlowMobile requires Android Kaia.ai app to run');
 
     if (window._kaia.tensorFlowMobile === undefined) {
       window._kaia.tensorFlowMobile = function () {};

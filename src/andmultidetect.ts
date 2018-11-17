@@ -27,7 +27,7 @@ export class AndroidMultiDetector {
   constructor() {
 
     if (window._kaia === undefined)
-      throw('kaia.js requires Android Kaia.ai app to run');
+      throw('AndroidMultiDetector requires Android Kaia.ai app to run');
 
     if (window._kaia.androidMultiDetector === undefined) {
       window._kaia.androidMultiDetector = function () {};

@@ -26,7 +26,7 @@ export class Serial {
   constructor() {
 
     if (window._kaia === undefined)
-      throw('kaia.js requires Android Kaia.ai app to run');
+      throw('Serial requires Android Kaia.ai app to run');
 
     if (window._kaia.serial === undefined) {
       window._kaia.serial = function () {};
@@ -82,12 +82,13 @@ export class Serial {
       cb(err);
   }
 
-  write(params: any): Promise<any> {
+  write(params: any): any {
     if (this.isClosed())
       throw('Serial instance has been closed');
+    if (typeof params === 'string')
+      params = {message: params};
 
-    let res = JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
-    return this._makePromise(res);
+    return JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
   }
 
   _makePromise(res: any): Promise<any> {
