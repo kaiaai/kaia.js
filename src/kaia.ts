@@ -22,3 +22,4 @@ export * from './andspeechrecog';
 export * from './andmultidetect';
 export * from './serial';
 export * from './texttospeech';
+export * from './sensors';

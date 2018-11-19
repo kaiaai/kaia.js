@@ -115,7 +115,7 @@ export class AndroidMultiDetector {
 
   close(): void {
     this._closed = true;
-    let res = JSON.parse(window._kaia.androidMultiDetectorClose());
+    let res = JSON.parse(window._kaia.androidMultiDetectorClose(''));
     if (res.err)
       throw(res.err);
     this._clearCallback();

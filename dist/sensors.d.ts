@@ -14,11 +14,20 @@
  * limitations under the License.
  * =============================================================================
  */
-export * from './tfmobile';
-export * from './tflite';
-export * from './pocketsphinx';
-export * from './andspeechrecog';
-export * from './andmultidetect';
-export * from './serial';
-export * from './texttospeech';
-export * from './sensors';
+export declare class Sensors {
+    readonly _handle: number;
+    _initialized: boolean;
+    static _created: boolean;
+    _closed: boolean;
+    _listener: Function | null;
+    constructor();
+    init(params: any): any;
+    _clearCallback(): void;
+    list(): any;
+    configure(params: any): any;
+    describe(params: any): any;
+    isClosed(): boolean;
+    close(): void;
+    setEventListener(listener: Function | null): void;
+}
+export declare function createSensors(params: any): Sensors;
