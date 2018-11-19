@@ -83,7 +83,7 @@ npm install kaia.js
 Now you can require/import `kaia.js`:
 
 ```js
-import { TfMobile, TfLite } from 'kaia.js';
+import { createTfMobile, createTfLite } from 'kaia.js';
 ```
 
 ### Via `<script>`
