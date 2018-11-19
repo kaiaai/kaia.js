@@ -24,6 +24,9 @@ Kaia.ai robot apps run on Android smartphones. To run sample apps:
 - Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app-node), built with node.js and webpack
 
 ```js
+<script type="module">
+import { createTfMobile } from 'https://cdn.jsdelivr.net/npm/kaia.js@0.6.0/dist/kaia.mjs';
+
 let tfMobile = await createTfMobile(model); // load model
 ...
 let result = await tfMobile.run([img], // classify image
@@ -41,6 +44,7 @@ let result = await tfMobile.run([img], // classify image
 let probabilities = result.output[0];
 ...
 tfMobile.close(); // optional
+</script>
 ```
 
 ### TfLite
