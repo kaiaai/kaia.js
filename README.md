@@ -6,7 +6,7 @@ Kaia.ai platform's JS client library
 - Sample app [source code](https://github.com/kaiaai/sensors)
 
 ## Installation
-Kaia.ai robot apps run on Android smartphones. To run the sample app:
+Kaia.ai robot apps run on Android smartphones. To run sample apps:
 1. Go to [kaia.ai](https://kaia.ai/), familiarize yourself with how the robot platform works
 2. Optional, but highly recommended: if you don't have Kaia.ai account, create an account
 3. Go to Google Play, search for "kaia.ai" to find and install Kaia.ai Android app
