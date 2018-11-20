@@ -14,12 +14,23 @@
  * limitations under the License.
  * =============================================================================
  */
-export * from './tfmobile';
-export * from './tflite';
-export * from './pocketsphinx';
-export * from './andspeechrecog';
-export * from './andmultidetect';
-export * from './serial';
-export * from './texttospeech';
-export * from './sensors';
-export * from './devicesettings';
+export declare class DeviceSettings {
+    readonly _handle: number;
+    _resolveFunc: Function | null;
+    _rejectFunc: Function | null;
+    _initialized: boolean;
+    static _created: boolean;
+    _closed: boolean;
+    _listener: Function | null;
+    constructor();
+    _clearCallback(): void;
+    _resolve(res: any): void;
+    _reject(err: any): void;
+    configure(params: any): Promise<any>;
+    getConfig(): Promise<any>;
+    _makePromise(res: any): Promise<any>;
+    isClosed(): boolean;
+    close(): void;
+    setEventListener(listener: Function | null): void;
+}
+export declare function createDeviceSettings(): DeviceSettings;

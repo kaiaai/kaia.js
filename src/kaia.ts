@@ -23,3 +23,4 @@ export * from './andmultidetect';
 export * from './serial';
 export * from './texttospeech';
 export * from './sensors';
+export * from './devicesettings';
