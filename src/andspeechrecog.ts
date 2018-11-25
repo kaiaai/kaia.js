@@ -125,7 +125,5 @@ export class AndroidSpeechRecognizer {
 export async function createAndroidSpeechRecognizer(params: any) {
   const androidSpeechRecognizer = new AndroidSpeechRecognizer();
   const res = await androidSpeechRecognizer.init(params || {});
-  if (typeof res === "string")
-    throw(res);
   return androidSpeechRecognizer;
 }

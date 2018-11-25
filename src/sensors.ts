@@ -106,7 +106,5 @@ export class Sensors {
 export function createSensors(params: any) {
   const sensors = new Sensors();
   const res = sensors.init(params || {});
-  if (res.err)
-    throw(res.err);
   return sensors;
 }

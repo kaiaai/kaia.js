@@ -160,7 +160,5 @@ export class PocketSphinx {
 export async function createPocketSphinx(params: any) {
   const pocketSphinx = new PocketSphinx();
   const res = await pocketSphinx.init(params || {});
-  if (typeof res === "string")
-    throw(res);
   return pocketSphinx;
 }

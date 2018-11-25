@@ -130,7 +130,5 @@ export class AndroidMultiDetector {
 export async function createAndroidMultiDetector(params: any) {
   const androidMultiDetector = new AndroidMultiDetector();
   const res = await androidMultiDetector.init(params || {});
-  if (typeof res === "string")
-    throw(res);
   return androidMultiDetector;
 }

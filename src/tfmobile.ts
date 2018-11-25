@@ -118,7 +118,5 @@ export class TensorFlowMobile {
 export async function createTensorFlowMobile(model: ArrayBuffer, params: any) {
   const tfMobile = new TensorFlowMobile();
   const res = await tfMobile.init(model, params || {});
-  if (typeof res === "string")
-    throw(res);
   return tfMobile;
 }

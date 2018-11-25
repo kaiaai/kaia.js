@@ -98,8 +98,6 @@ class TensorFlowMobile {
 async function createTensorFlowMobile(model, params) {
     const tfMobile = new TensorFlowMobile();
     const res = await tfMobile.init(model, params || {});
-    if (typeof res === "string")
-        throw (res);
     return tfMobile;
 }
 
@@ -203,8 +201,6 @@ class TensorFlowLite {
 async function createTensorFlowLite(model, params) {
     const tfLite = new TensorFlowLite();
     const res = await tfLite.init(model, params || {});
-    if (typeof res === "string")
-        throw (res);
     return tfLite;
 }
 
@@ -345,8 +341,6 @@ PocketSphinx._created = false;
 async function createPocketSphinx(params) {
     const pocketSphinx = new PocketSphinx();
     const res = await pocketSphinx.init(params || {});
-    if (typeof res === "string")
-        throw (res);
     return pocketSphinx;
 }
 
@@ -456,8 +450,6 @@ AndroidSpeechRecognizer._created = false;
 async function createAndroidSpeechRecognizer(params) {
     const androidSpeechRecognizer = new AndroidSpeechRecognizer();
     const res = await androidSpeechRecognizer.init(params || {});
-    if (typeof res === "string")
-        throw (res);
     return androidSpeechRecognizer;
 }
 
@@ -574,8 +566,6 @@ AndroidMultiDetector._created = false;
 async function createAndroidMultiDetector(params) {
     const androidMultiDetector = new AndroidMultiDetector();
     const res = await androidMultiDetector.init(params || {});
-    if (typeof res === "string")
-        throw (res);
     return androidMultiDetector;
 }
 
@@ -911,8 +901,6 @@ Sensors._created = false;
 function createSensors(params) {
     const sensors = new Sensors();
     const res = sensors.init(params || {});
-    if (res.err)
-        throw (res.err);
     return sensors;
 }
 

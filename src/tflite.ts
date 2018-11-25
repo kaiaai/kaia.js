@@ -118,7 +118,5 @@ export class TensorFlowLite {
 export async function createTensorFlowLite(model: ArrayBuffer, params: any) {
   const tfLite = new TensorFlowLite();
   const res = await tfLite.init(model, params || {});
-  if (typeof res === "string")
-    throw(res);
   return tfLite;
 }
