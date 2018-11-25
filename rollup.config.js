@@ -6,7 +6,7 @@ export default {
   output: [{
     file: 'dist/kaia-iife.js',
     format: 'iife',
-    name: 'idbKeyval'
+    name: 'kaiaJs'
   }, {
     file: 'dist/kaia-cjs.js',
     format: 'cjs'
