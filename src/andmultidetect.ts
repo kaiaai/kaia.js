@@ -16,53 +16,52 @@
  */
 
 export class AndroidMultiDetector {
-   readonly _handle: number;
+   _handle: number = -1;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _initialized: boolean = false;
   static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
+  }
+
+  async init(params: any): Promise<any> {
 
     if (window._kaia === undefined)
-      throw('AndroidMultiDetector requires Android Kaia.ai app to run');
+      return Promise.reject('AndroidMultiDetector requires Android Kaia.ai app to run');
+    if (this._handle !== -1)
+      return Promise.reject('Already initialized');
 
     if (window._kaia.androidMultiDetector === undefined) {
-      window._kaia.androidMultiDetector = function () {};
-      window._kaia.androidMultiDetector.engine = [];
-      window._kaia.androidMultiDetector.cb = function (jsonString: string) {
+      window._kaia.androidMultiDetector = function() {};
+      window._kaia.androidMultiDetector.engine = this;
+      window._kaia.androidMultiDetector.cb = function(jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        const obj = window._kaia.androidMultiDetector.engine[0];
-        if (opRes.event === "init" && (obj._rejectFunc != null) && (obj._resolveFunc != null))
-          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
+        const obj = window._kaia.androidMultiDetector.engine;
+        if (opRes.event === 'init' && (obj._rejectFunc != null) && (obj._resolveFunc != null))
+          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(this);
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
 
     if (AndroidMultiDetector._created)
-      throw('Only one instance allowed');
-
-    window._kaia.androidMultiDetector.engine.push(this);
-    this._handle = window._kaia.androidMultiDetector.engine.length - 1;
+      return Promise.reject('Only one instance allowed');
     AndroidMultiDetector._created = true;
-  }
 
-  init(params: any): Promise<any> {
-    if (this._initialized)
-      throw("Already initialized");
-    this._initialized = true;
-
-    let res = JSON.parse(window._kaia.androidMultiDetectorInit(JSON.stringify(params || {})));
+    params = params || {};
+    if (params.eventListener)
+      this.setEventListener(params.eventListener);
+    
+    let res = JSON.parse(window._kaia.androidMultiDetectorInit(JSON.stringify(params)));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.androidMultiDetector.engine[this._handle] = null;
+    window._kaia.androidMultiDetector.engine = null;
   }
 
   _resolve(res: any): void {
@@ -79,9 +78,9 @@ export class AndroidMultiDetector {
       cb(err);
   }
 
-  detect(params: any): Promise<any> {
+  async detect(params: any): Promise<any> {
     if (this.isClosed())
-      throw('AndroidMultiDetector instance has been closed');
+      return Promise.reject('AndroidMultiDetector instance has been closed');
     if (params === undefined)
       params = {enabled: true};
     else if (typeof params === 'boolean')
@@ -91,7 +90,7 @@ export class AndroidMultiDetector {
       params = textDecoder.decode(params);
     } else if (typeof params === 'string') {}
     else
-      throw('Unsupported argument type');
+      return Promise.reject('Unsupported argument type');
 
     let res = JSON.parse(window._kaia.androidMultiDetectorDetect(params));
     return this._makePromise(res);
@@ -99,13 +98,13 @@ export class AndroidMultiDetector {
 
   _makePromise(res: any): Promise<any> {
     if (res.err)
-      throw(res.err);
+      return Promise.reject(res.err);
 
     let promise = new Promise<any>((resolve, reject) => {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.androidMultiDetector.engine[this._handle] = this;
+    window._kaia.androidMultiDetector.engine = this;
     return promise;
   }
 
@@ -129,6 +128,5 @@ export class AndroidMultiDetector {
 
 export async function createAndroidMultiDetector(params: any) {
   const androidMultiDetector = new AndroidMultiDetector();
-  const res = await androidMultiDetector.init(params || {});
-  return androidMultiDetector;
+  return androidMultiDetector.init(params);
 }

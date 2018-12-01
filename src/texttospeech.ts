@@ -15,30 +15,34 @@
  * =============================================================================
  */
 export class TextToSpeech {
-   readonly _handle: number;
+   _handle: number = -1;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _initialized: boolean = false;
   static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
+  }
+
+  async init(params: any): Promise<any> {
 
     if (window._kaia === undefined)
-      throw('TextToSpeech requires Android Kaia.ai app to run');
+      return Promise.reject('TextToSpeech requires Android Kaia.ai app to run');
+    if (this._handle !== -1)
+      return Promise.reject('Already initialized');
 
     if (window._kaia.textToSpeech === undefined) {
-      window._kaia.textToSpeech = function () {};
-      window._kaia.textToSpeech.engine = [];
-      window._kaia.textToSpeech.cb = function (jsonString: string) {
+      window._kaia.textToSpeech = function() {};
+      window._kaia.textToSpeech.engine = this;
+      window._kaia.textToSpeech.cb = function(jsonString: string) {
         const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.textToSpeech.engine[0];
-        if (opRes.event === "init" || opRes.event === "done" || opRes.event === "error") {
+        const obj = window._kaia.textToSpeech.engine;
+        if (opRes.event === 'init' || opRes.event === 'done' || opRes.event === 'error') {
           if (opRes.err && (obj._rejectFunc != null))
             obj._rejectFunc(opRes.err);
           else if (!opRes.err && (obj._resolveFunc != null))
-            obj._resolveFunc(opRes.event);
+            obj._resolveFunc(opRes.event === 'init' ? this : opRes.event);
         }
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
@@ -46,21 +50,16 @@ export class TextToSpeech {
     }
 
     if (TextToSpeech._created)
-      throw("Only one instance allowed");
-
-    window._kaia.textToSpeech.engine.push(this);
-    this._handle = window._kaia.textToSpeech.engine.length - 1;
+      return Promise.reject('Only one instance allowed');
     TextToSpeech._created = true;
-  }
 
-  init(params: any): Promise<any> {
-    if (this._initialized)
-      throw("Already initialized");
-    this._initialized = true;
+    if (params && typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
 
-    params = params || {};
-    let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
-    return this._makePromise(res);
+    let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params || {})));
+
+    return params ? this._makePromise(res).then(this.configure(params)) :
+      this._makePromise(res);
   }
 
   _clearCallback(): void {
@@ -83,7 +82,7 @@ export class TextToSpeech {
       cb(err);
   }
 
-  speak(params: any): Promise<any> {
+  async speak(params: any): Promise<any> {
     if (this.isClosed())
       throw('TextToSpeech instance has been closed');
     if (typeof params === 'string')
@@ -141,13 +140,5 @@ export class TextToSpeech {
 
 export async function createTextToSpeech(params: any) {
   const textToSpeech = new TextToSpeech();
-  let res = await textToSpeech.init({});
-  if (res !== "init")
-    throw(res);
-  if (params !== undefined) {
-    res = textToSpeech.configure(params);
-    if (res.err)
-      throw(res);
-  }
-  return textToSpeech;
+  return textToSpeech.init(params);
 }

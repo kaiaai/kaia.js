@@ -15,14 +15,13 @@
  * =============================================================================
  */
 export declare class DeviceSettings {
-    readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _initialized: boolean;
     static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
     constructor();
+    init(params: any): Promise<any>;
     _clearCallback(): void;
     _resolve(res: any): void;
     _reject(err: any): void;
@@ -33,4 +32,4 @@ export declare class DeviceSettings {
     close(): void;
     setEventListener(listener: Function | null): void;
 }
-export declare function createDeviceSettings(): DeviceSettings;
+export declare function createDeviceSettings(params: any): Promise<any>;

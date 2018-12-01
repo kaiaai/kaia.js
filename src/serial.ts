@@ -15,29 +15,29 @@
  * =============================================================================
  */
 export class Serial {
-   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _initialized: boolean = false;
   static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
+  }
 
+  async init(params: any): Promise<any> {
     if (window._kaia === undefined)
-      throw('Serial requires Android Kaia.ai app to run');
+      return Promise.reject('Serial requires Android Kaia.ai app to run');
 
     if (window._kaia.serial === undefined) {
-      window._kaia.serial = function () {};
-      window._kaia.serial.engine = [];
-      window._kaia.serial.cb = function (jsonString: string) {
+      window._kaia.serial = function() {};
+      window._kaia.serial.engine = this;
+      window._kaia.serial.cb = function(jsonString: string) {
         const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.serial.engine[0];
-        if (opRes.event === "serialUsbReady" && (obj._resolveFunc != null))
-          obj._resolveFunc(opRes.event);
-        if ((opRes.event === "usbNotSupported" || opRes.event === "usbDeviceNotWorking" ||
-          opRes.event === "cdcDriverNotWorking") && (obj._rejectFunc != null))
+        const obj = window._kaia.serial.engine;
+        if (opRes.event === 'serialUsbReady' && (obj._resolveFunc != null))
+          obj._resolveFunc(this);
+        if ((opRes.event === 'usbNotSupported' || opRes.event === 'usbDeviceNotWorking' ||
+          opRes.event === 'cdcDriverNotWorking') && (obj._rejectFunc != null))
           obj._rejectFunc(opRes.event);
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
@@ -45,19 +45,13 @@ export class Serial {
     }
 
     if (Serial._created)
-      throw('Only one instance allowed');
-
-    window._kaia.serial.engine.push(this);
-    this._handle = window._kaia.serial.engine.length - 1;
+      return Promise.reject('Only one instance allowed');
     Serial._created = true;
-  }
-
-  init(params: any): Promise<any> {
-    if (this._initialized)
-      throw("Already initialized");
-    this._initialized = true;
 
     params = params || {};
+    if (typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
+
     let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
     return this._makePromise(res);
   }
@@ -65,7 +59,7 @@ export class Serial {
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.serial.engine[this._handle] = null;
+    window._kaia.serial.engine = null;
   }
 
   _resolve(res: any): void {
@@ -99,7 +93,7 @@ export class Serial {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.serial.engine[this._handle] = this;
+    window._kaia.serial.engine = this;
     return promise;
   }
 
@@ -123,8 +117,5 @@ export class Serial {
 
 export async function createSerial(params: any) {
   const serial = new Serial();
-  const res = await serial.init(params || {});
-  if (res !== "serialUsbReady")
-    throw(res);
-  return serial;
+  return serial.init(params);
 }

@@ -15,10 +15,9 @@
  * =============================================================================
  */
 export declare class TextToSpeech {
-    readonly _handle: number;
+    _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _initialized: boolean;
     static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
@@ -35,4 +34,4 @@ export declare class TextToSpeech {
     close(): void;
     setEventListener(listener: Function | null): void;
 }
-export declare function createTextToSpeech(params: any): Promise<TextToSpeech>;
+export declare function createTextToSpeech(params: any): Promise<any>;

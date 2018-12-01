@@ -15,10 +15,9 @@
  * =============================================================================
  */
 export declare class AndroidMultiDetector {
-    readonly _handle: number;
+    _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _initialized: boolean;
     static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
@@ -33,4 +32,4 @@ export declare class AndroidMultiDetector {
     close(): void;
     setEventListener(listener: Function | null): void;
 }
-export declare function createAndroidMultiDetector(params: any): Promise<AndroidMultiDetector>;
+export declare function createAndroidMultiDetector(params: any): Promise<any>;

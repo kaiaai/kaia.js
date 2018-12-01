@@ -15,10 +15,8 @@
  * =============================================================================
  */
 export declare class AndroidSpeechRecognizer {
-    readonly _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _initialized: boolean;
     static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
@@ -33,4 +31,4 @@ export declare class AndroidSpeechRecognizer {
     close(): void;
     setEventListener(listener: Function | null): void;
 }
-export declare function createAndroidSpeechRecognizer(params: any): Promise<AndroidSpeechRecognizer>;
+export declare function createAndroidSpeechRecognizer(params: any): Promise<any>;

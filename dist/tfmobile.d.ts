@@ -15,10 +15,11 @@
  * =============================================================================
  */
 export declare class TensorFlowMobile {
-    readonly _handle: number;
+    _handle: number;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
     _modelLoaded: boolean;
+    _listener: Function | null;
     constructor();
     init(model: ArrayBuffer, params: any): Promise<any>;
     _clearCallback(): void;
@@ -27,6 +28,7 @@ export declare class TensorFlowMobile {
     run(data: ArrayBuffer[], params: any): Promise<any>;
     _makePromise(res: any): Promise<any>;
     isClosed(): boolean;
+    setEventListener(listener: Function | null): void;
     close(): void;
 }
-export declare function createTensorFlowMobile(model: ArrayBuffer, params: any): Promise<TensorFlowMobile>;
+export declare function createTensorFlowMobile(model: ArrayBuffer, params: any): Promise<any>;

@@ -15,30 +15,30 @@
  * =============================================================================
  */
 export class DeviceSettings {
-   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _initialized: boolean = false;
   static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
+  }
 
+  async init(params: any): Promise<any> {
     if (window._kaia === undefined)
-      throw('DeviceSettings requires Android Kaia.ai app to run');
+      return Promise.reject('DeviceSettings requires Android Kaia.ai app to run');
 
     if (window._kaia.deviceSettings === undefined) {
-      window._kaia.deviceSettings = function () {};
-      window._kaia.deviceSettings.engine = [];
-      window._kaia.deviceSettings.cb = function (jsonString: string) {
+      window._kaia.deviceSettings = function() {};
+      window._kaia.deviceSettings.engine = null;
+      window._kaia.deviceSettings.cb = function(jsonString: string) {
         const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.deviceSettings.engine[0];
-        if (opRes.event === "getConfig" || opRes.event === "configure") {
+        const obj = window._kaia.deviceSettings.engine;
+        if (opRes.event === 'configure' || opRes.event === 'getConfig') {
           if (opRes.err && (obj._rejectFunc != null))
             obj._rejectFunc(opRes.err);
           else if (!opRes.err && (obj._resolveFunc != null))
-            obj._resolveFunc(opRes);
+            obj._resolveFunc(opRes.event === 'configure' ? this : opRes);
         }
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
@@ -46,17 +46,20 @@ export class DeviceSettings {
     }
 
     if (DeviceSettings._created)
-      throw("Only one instance allowed");
+      return Promise.reject('Only one instance allowed');
+    if (params && typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
 
-    window._kaia.deviceSettings.engine.push(this);
-    this._handle = window._kaia.deviceSettings.engine.length - 1;
+    window._kaia.deviceSettings.engine = this;
     DeviceSettings._created = true;
+
+    return (typeof params === 'object') ? this.configure(params) : Promise.resolve(this);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.deviceSettings.engine[this._handle] = null;
+    window._kaia.deviceSettings.engine = null;
   }
 
   _resolve(res: any): void {
@@ -75,31 +78,32 @@ export class DeviceSettings {
 
   async configure(params: any): Promise<any> {
     if (!params)
-      throw('Parameters object required');
+      return Promise.reject('Parameters object required');
     if (this.isClosed())
-      throw('DeviceSettings instance has been closed');
+      return Promise.reject('DeviceSettings instance has been closed');
 
+    params = params || {};
     const res = JSON.parse(window._kaia.deviceSettingsConfigure(JSON.stringify(params)));
     return this._makePromise(res);
   }
 
   async getConfig(): Promise<any> {
     if (this.isClosed())
-      throw('DeviceSettings instance has been closed');
+      return Promise.reject('DeviceSettings instance has been closed');
 
     const res = JSON.parse(window._kaia.deviceSettingsGetConfig(''));
     return this._makePromise(res);
   }
 
-  _makePromise(res: any): Promise<any> {
+  _makePromise(res: any, ): Promise<any> {
     if (res.err)
-      throw(res.err);
+      return Promise.reject(res.err);
 
     let promise = new Promise<any>((resolve, reject) => {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.deviceSettings.engine[this._handle] = this;
+    window._kaia.deviceSettings.engine = this;
     return promise;
   }
 
@@ -121,6 +125,7 @@ export class DeviceSettings {
   }
 }
 
-export function createDeviceSettings() {
-  return new DeviceSettings();
+export async function createDeviceSettings(params: any) {
+  const deviceSettings = new DeviceSettings();
+  return deviceSettings.init(params);
 }

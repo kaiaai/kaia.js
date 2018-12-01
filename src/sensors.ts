@@ -15,47 +15,43 @@
  * =============================================================================
  */
 export class Sensors {
-   readonly _handle: number;
-  _initialized: boolean = false;
   static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
+  }
+
+  async init(params: any): Promise<any> {
 
     if (window._kaia === undefined)
-      throw('Sensors requires Android Kaia.ai app to run');
+      return Promise.reject('Sensors requires Android Kaia.ai app to run');
 
     if (window._kaia.sensors === undefined) {
-      window._kaia.sensors = function () {};
-      window._kaia.sensors.engine = [];
-      window._kaia.sensors.cb = function (jsonString: string) {
+      window._kaia.sensors = function() {};
+      window._kaia.sensors.engine = this;
+      window._kaia.sensors.cb = function(jsonString: string) {
         const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.sensors.engine[0];
+        const obj = window._kaia.sensors.engine;
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
 
     if (Sensors._created)
-      throw("Only one instance allowed");
-
-    window._kaia.sensors.engine.push(this);
-    this._handle = window._kaia.sensors.engine.length - 1;
+      return Promise.reject('Only one instance allowed');
     Sensors._created = true;
-  }
-
-  init(params: any): any {
-    if (this._initialized)
-      throw("Already initialized");
-    this._initialized = true;
 
     params = params || {};
-    return JSON.parse(window._kaia.sensorsInit(JSON.stringify(params)));
+    if (params && typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
+
+    const res = JSON.parse(window._kaia.sensorsInit(JSON.stringify(params)));
+    return res.err ? Promise.reject(res.err) : Promise.resolve(this);
   }
 
   _clearCallback(): void {
-    window._kaia.sensors.engine[this._handle] = null;
+    window._kaia.sensors.engine = null;
   }
 
   list(): any {
@@ -103,8 +99,7 @@ export class Sensors {
   }
 }
 
-export function createSensors(params: any) {
+export async function createSensors(params: any) {
   const sensors = new Sensors();
-  const res = sensors.init(params || {});
-  return sensors;
+  return sensors.init(params);
 }

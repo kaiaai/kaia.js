@@ -16,53 +16,48 @@
  */
 
 export class AndroidSpeechRecognizer {
-   readonly _handle: number;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _initialized: boolean = false;
   static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
+  }
 
+  async init(params: any): Promise<any> {
     if (window._kaia === undefined)
-      throw('kaia.js requires Android Kaia.ai app to run');
+      return Promise.reject('kaia.js requires Android Kaia.ai app to run');
 
     if (window._kaia.androidSpeechRecognizer === undefined) {
-      window._kaia.androidSpeechRecognizer = function () {};
-      window._kaia.androidSpeechRecognizer.engine = [];
-      window._kaia.androidSpeechRecognizer.cb = function (jsonString: string) {
+      window._kaia.androidSpeechRecognizer = function() {};
+      window._kaia.androidSpeechRecognizer.engine = this;
+      window._kaia.androidSpeechRecognizer.cb = function(jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
-        const obj = window._kaia.androidSpeechRecognizer.engine[0];
-        if (opRes.event === "init" && (obj._rejectFunc != null) && (obj._resolveFunc != null))
-          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
+        const obj = window._kaia.androidSpeechRecognizer.engine;
+        if (opRes.event === 'init' && (obj._rejectFunc != null) && (obj._resolveFunc != null))
+          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(this);
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
 
     if (AndroidSpeechRecognizer._created)
-      throw('Only one instance allowed');
-
-    window._kaia.androidSpeechRecognizer.engine.push(this);
-    this._handle = window._kaia.androidSpeechRecognizer.engine.length - 1;
+      return Promise.reject('Only one instance allowed');
     AndroidSpeechRecognizer._created = true;
-  }
 
-  init(params: any): Promise<any> {
-    if (this._initialized)
-      throw("Already initialized");
-    this._initialized = true;
+    params = params || {};
+    if (typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
 
-    let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params || {})));
+    let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params)));
     return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.androidSpeechRecognizer.engine[this._handle] = null;
+    window._kaia.androidSpeechRecognizer.engine = null;
   }
 
   _resolve(res: any): void {
@@ -79,10 +74,9 @@ export class AndroidSpeechRecognizer {
       cb(err);
   }
 
-  listen(params: any): Promise<any> {
+  async listen(params: any): Promise<any> {
     if (this.isClosed())
-
-      throw('AndroidSpeechRecognizer instance has been closed');
+      return Promise.reject('AndroidSpeechRecognizer instance has been closed');
     if (params == undefined)
       params = {enabled: true};
     else if (typeof params == 'boolean')
@@ -94,13 +88,13 @@ export class AndroidSpeechRecognizer {
 
   _makePromise(res: any): Promise<any> {
     if (res.err)
-      throw(res.err);
+      return Promise.reject(res.err);
 
     let promise = new Promise<any>((resolve, reject) => {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.androidSpeechRecognizer.engine[this._handle] = this;
+    window._kaia.androidSpeechRecognizer.engine = this;
     return promise;
   }
 
@@ -124,6 +118,5 @@ export class AndroidSpeechRecognizer {
 
 export async function createAndroidSpeechRecognizer(params: any) {
   const androidSpeechRecognizer = new AndroidSpeechRecognizer();
-  const res = await androidSpeechRecognizer.init(params || {});
-  return androidSpeechRecognizer;
+  return androidSpeechRecognizer.init(params);
 }

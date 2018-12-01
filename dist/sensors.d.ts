@@ -15,13 +15,11 @@
  * =============================================================================
  */
 export declare class Sensors {
-    readonly _handle: number;
-    _initialized: boolean;
     static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
     constructor();
-    init(params: any): any;
+    init(params: any): Promise<any>;
     _clearCallback(): void;
     list(): any;
     configure(params: any): any;
@@ -30,4 +28,4 @@ export declare class Sensors {
     close(): void;
     setEventListener(listener: Function | null): void;
 }
-export declare function createSensors(params: any): Sensors;
+export declare function createSensors(params: any): Promise<any>;
