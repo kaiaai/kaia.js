@@ -814,8 +814,9 @@ class TextToSpeech {
 }
 TextToSpeech.initialized = false;
 async function createTextToSpeech(params) {
-    const textToSpeech = new TextToSpeech();
-    return textToSpeech.init(params);
+    const textToSpeech = TextToSpeech.singleton() || new TextToSpeech();
+    return TextToSpeech.initialized ? textToSpeech.configure(params) :
+        textToSpeech.init(params);
 }
 
 /**
