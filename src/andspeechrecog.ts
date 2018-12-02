@@ -42,7 +42,7 @@ export class AndroidSpeechRecognizer {
         if (opRes.err)
           obj._reject(opRes.err);
         else
-          obj._resolve(this);
+          obj._resolve(obj);
       if (obj._listener != null)
         obj._listener(opRes.err, opRes);
     };
