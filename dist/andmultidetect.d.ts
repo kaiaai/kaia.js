@@ -28,7 +28,7 @@ export declare class AndroidMultiDetector {
     _reject(err: any): void;
     detect(params: any): Promise<any>;
     _makePromise(res: any): Promise<any>;
-    isClosed(): boolean;
+    closed(): boolean;
     close(): void;
     setEventListener(listener: Function | null): void;
 }

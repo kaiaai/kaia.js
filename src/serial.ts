@@ -15,9 +15,9 @@
  * =============================================================================
  */
 export class Serial {
+  _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _closed: boolean = false;
   _listener: Function | null = null;
   static initialized: boolean = false;
 
@@ -79,7 +79,7 @@ export class Serial {
   }
 
   write(params: any): any {
-    if (this.isClosed())
+    if (this.closed())
       throw 'Serial instance has been closed';
     if (typeof params === 'string')
       params = {message: params};
@@ -98,7 +98,7 @@ export class Serial {
     return promise;
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 

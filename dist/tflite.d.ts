@@ -16,6 +16,7 @@
  */
 export declare class TensorFlowLite {
     _handle: number;
+    _closed: boolean;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
     _modelLoaded: boolean;
@@ -27,7 +28,7 @@ export declare class TensorFlowLite {
     _reject(err: any): void;
     run(data: ArrayBuffer[], params: any): Promise<any>;
     _makePromise(res: any): Promise<any>;
-    isClosed(): boolean;
+    closed(): boolean;
     setEventListener(listener: Function | null): void;
     close(): void;
 }

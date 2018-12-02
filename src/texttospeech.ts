@@ -84,7 +84,7 @@ export class TextToSpeech {
   }
 
   async speak(params: any): Promise<any> {
-    if (this.isClosed())
+    if (this.closed())
       throw 'TextToSpeech instance has been closed';
     if (typeof params === 'string')
       params = {text: params};
@@ -96,7 +96,7 @@ export class TextToSpeech {
   async configure(params: any): Promise<any> {
     if (!params)
       return Promise.resolve(this);
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('TextToSpeech instance has been closed');
 
     const res = JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
@@ -104,7 +104,7 @@ export class TextToSpeech {
   }
 
   getConfig(): any {
-    if (this.isClosed())
+    if (this.closed())
       throw 'TextToSpeech instance has been closed';
 
     return JSON.parse(window._kaia.textToSpeechGetConfig(''));
@@ -121,7 +121,7 @@ export class TextToSpeech {
     return promise;
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 

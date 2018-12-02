@@ -21,28 +21,33 @@ Object.defineProperty(exports, '__esModule', { value: true });
 class TensorFlowMobile {
     constructor() {
         this._handle = -1;
+        this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._modelLoaded = false;
         this._listener = null;
-    }
-    async init(model, params) {
         if (window._kaia === undefined)
-            return Promise.reject('TensorFlowMobile requires Android Kaia.ai app to run');
-        if (this._handle !== -1)
-            return Promise.reject('Already initialized');
+            throw 'TensorFlowLite requires Android Kaia.ai app to run';
         if (window._kaia.tensorFlowMobile === undefined) {
             window._kaia.tensorFlowMobile = function () { };
             window._kaia.tensorFlowMobile.engine = [];
             window._kaia.tensorFlowMobile.cb = function (jsonString) {
                 const opRes = JSON.parse(unescape(jsonString));
                 const obj = window._kaia.tensorFlowMobile.engine[opRes.handle];
-                opRes.err ? obj._rejectFunc(opRes.err) :
-                    obj._resolveFunc(opRes.event === 'init' ? this : opRes);
+                if (opRes.err)
+                    obj._reject(opRes.err);
+                else
+                    obj._resolve(opRes.event === 'init' ? obj : opRes);
                 if (obj._listener != null)
                     obj._listener(opRes.err, opRes);
             };
         }
+    }
+    async init(model, params) {
+        if (this._handle !== -1)
+            return Promise.reject('Already initialized');
+        if (params && typeof params.eventListener === 'function')
+            this.setEventListener(params.eventListener);
         window._kaia.tensorFlowMobile.engine.push(this);
         this._handle = window._kaia.tensorFlowMobile.engine.length - 1;
         if (this._modelLoaded)
@@ -52,15 +57,12 @@ class TensorFlowMobile {
         const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
         params = params || {};
         params.handle = this._handle;
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
         let res = JSON.parse(window._kaia.tensorFlowMobileInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.tensorFlowMobile.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -75,9 +77,9 @@ class TensorFlowMobile {
             cb(err);
     }
     async run(data, params) {
-        if (this.isClosed())
-            Promise.reject('TensorFlowMobile instance has been closed');
-        const textDecoder = new TextDecoder("iso-8859-1");
+        if (this.closed())
+            return Promise.reject('TensorFlowMobile instance has been closed');
+        const textDecoder = new TextDecoder('iso-8859-1');
         let dataDecoded = [];
         for (let i = 0; i < data.length; i++)
             dataDecoded[i] = textDecoder.decode(data[i]);
@@ -93,21 +95,22 @@ class TensorFlowMobile {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.tensorFlowMobile.engine[this._handle] = this;
         return promise;
     }
-    isClosed() {
-        return window._kaia.tensorFlowMobile.engine[this._handle] === null;
+    closed() {
+        // return window._kaia.tensorFlowMobile.engine[this._handle] === null;
+        return this._closed;
     }
     setEventListener(listener) {
         this._listener = listener;
     }
     close() {
+        this._closed = true;
         let params = { handle: this._handle };
-        window._kaia.tensorFlowMobile.engine[this._handle] = null;
         let res = JSON.parse(window._kaia.tensorFlowMobileClose(JSON.stringify(params)));
-        this._listener = null;
         this._clearCallback();
+        this._listener = null;
+        // window._kaia.tensorFlowMobile.engine[this._handle] = null;
         if (res.err)
             throw res.err;
     }
@@ -136,6 +139,7 @@ async function createTensorFlowMobile(model, params) {
 class TensorFlowLite {
     constructor() {
         this._handle = -1;
+        this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._modelLoaded = false;
@@ -191,9 +195,9 @@ class TensorFlowLite {
             cb(err);
     }
     async run(data, params) {
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('TensorFlowLite instance has been closed');
-        const textDecoder = new TextDecoder("iso-8859-1");
+        const textDecoder = new TextDecoder('iso-8859-1');
         let dataDecoded = [];
         for (let i = 0; i < data.length; i++)
             dataDecoded[i] = textDecoder.decode(data[i]);
@@ -211,18 +215,20 @@ class TensorFlowLite {
         });
         return promise;
     }
-    isClosed() {
-        return window._kaia.tensorFlowLite.engine[this._handle] === null;
+    closed() {
+        return this._closed;
+        //return window._kaia.tensorFlowLite.engine[this._handle] === null;
     }
     setEventListener(listener) {
         this._listener = listener;
     }
     close() {
+        this._closed = true;
         let params = { handle: this._handle };
         let res = JSON.parse(window._kaia.tensorFlowLiteClose(JSON.stringify(params)));
         this._listener = null;
         this._clearCallback();
-        window._kaia.tensorFlowLite.engine[this._handle] = null;
+        //window._kaia.tensorFlowLite.engine[this._handle] = null;
         if (res.err)
             throw res.err;
     }
@@ -252,8 +258,29 @@ class PocketSphinx {
     constructor() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._closed = false;
         this._listener = null;
+        this._closed = false;
+        if (window._kaia === undefined)
+            throw 'PocketSphinx requires Android Kaia.ai app to run';
+        if (PocketSphinx.singleton())
+            throw 'Only one instance allowed';
+        window._kaia.pocketSphinx = function () { };
+        window._kaia.pocketSphinx.engine = this;
+        window._kaia.pocketSphinx.cb = function (jsonString) {
+            const opRes = JSON.parse(unescape(jsonString));
+            const obj = window._kaia.pocketSphinx.engine;
+            if (opRes.event === 'init')
+                if (opRes.err)
+                    obj._reject(opRes.err);
+                else
+                    obj._resolve(opRes);
+            if (obj._listener != null)
+                obj._listener(opRes.err, opRes);
+        };
+    }
+    static singleton() {
+        return (window._kaia && window._kaia.pocketSphinx) ?
+            window._kaia.pocketSphinx.engine : undefined;
     }
     _extractArrayBufs(params) {
         const data = [];
@@ -277,26 +304,12 @@ class PocketSphinx {
         return data;
     }
     async init(params) {
-        if (window._kaia === undefined)
-            return Promise.reject('PocketSphinx requires Android Kaia.ai app to run');
-        if (window._kaia.pocketSphinx === undefined) {
-            window._kaia.pocketSphinx = function () { };
-            window._kaia.pocketSphinx.engine = this;
-            window._kaia.pocketSphinx.cb = function (jsonString) {
-                const opRes = JSON.parse(unescape(jsonString));
-                const obj = window._kaia.pocketSphinx.engine;
-                if (opRes.event === 'init' && (obj._rejectFunc != null) && (obj._resolveFunc != null))
-                    opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
-                if (obj._listener != null)
-                    obj._listener(opRes.err, opRes);
-            };
-        }
-        if (PocketSphinx._created)
-            return Promise.reject('Only one instance allowed');
-        PocketSphinx._created = true;
+        if (PocketSphinx.initialized)
+            return Promise.reject('Already initialized');
         params = params || {};
         if (typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
+        PocketSphinx.initialized = true;
         const data = this._extractArrayBufs(params);
         let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), data));
         return this._makePromise(res);
@@ -310,7 +323,6 @@ class PocketSphinx {
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.pocketSphinx.engine = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -325,14 +337,14 @@ class PocketSphinx {
             cb(err);
     }
     async listen(params) {
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('PocketSphinx instance has been closed');
         if (params == undefined)
-            params = { cmd: "listen" };
+            params = { cmd: 'listen' };
         else if (typeof params == 'boolean')
-            params = params ? { cmd: "listen" } : { cmd: "cancel" };
+            params = params ? { cmd: 'listen' } : { cmd: 'cancel' };
         else if (typeof params == 'string')
-            params = { cmd: "listen", searchName: params };
+            params = { cmd: 'listen', searchName: params };
         let res = JSON.parse(window._kaia.pocketSphinxListen(JSON.stringify(params)));
         return this._makePromise(res);
     }
@@ -343,10 +355,9 @@ class PocketSphinx {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.pocketSphinx.engine = this;
         return promise;
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {
@@ -361,10 +372,10 @@ class PocketSphinx {
         this._listener = listener;
     }
 }
-PocketSphinx._created = false;
+PocketSphinx.initialized = false;
 async function createPocketSphinx(params) {
-    const pocketSphinx = new PocketSphinx();
-    return pocketSphinx.init(params);
+    const pocketSphinx = PocketSphinx.singleton() || new PocketSphinx();
+    return PocketSphinx.initialized ? pocketSphinx : pocketSphinx.init(params);
 }
 
 /**
@@ -385,9 +396,9 @@ async function createPocketSphinx(params) {
  */
 class AndroidSpeechRecognizer {
     constructor() {
+        this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
             throw 'AndroidSpeechRecognizer requires Android Kaia.ai app to run';
@@ -436,7 +447,7 @@ class AndroidSpeechRecognizer {
             cb(err);
     }
     async listen(params) {
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('AndroidSpeechRecognizer instance has been closed');
         if (params == undefined)
             params = { enabled: true };
@@ -454,7 +465,7 @@ class AndroidSpeechRecognizer {
         });
         return promise;
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {
@@ -544,7 +555,7 @@ class AndroidMultiDetector {
             cb(err);
     }
     async detect(params) {
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('AndroidMultiDetector instance has been closed');
         if (params === undefined)
             params = { enabled: true };
@@ -570,7 +581,7 @@ class AndroidMultiDetector {
         window._kaia.androidMultiDetector.engine = this;
         return promise;
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {
@@ -609,9 +620,9 @@ async function createAndroidMultiDetector(params) {
  */
 class Serial {
     constructor() {
+        this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
             throw 'Serial requires Android Kaia.ai app to run';
@@ -661,7 +672,7 @@ class Serial {
             cb(err);
     }
     write(params) {
-        if (this.isClosed())
+        if (this.closed())
             throw 'Serial instance has been closed';
         if (typeof params === 'string')
             params = { message: params };
@@ -676,7 +687,7 @@ class Serial {
         });
         return promise;
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {
@@ -773,7 +784,7 @@ class TextToSpeech {
             cb(err);
     }
     async speak(params) {
-        if (this.isClosed())
+        if (this.closed())
             throw 'TextToSpeech instance has been closed';
         if (typeof params === 'string')
             params = { text: params };
@@ -783,13 +794,13 @@ class TextToSpeech {
     async configure(params) {
         if (!params)
             return Promise.resolve(this);
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('TextToSpeech instance has been closed');
         const res = JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
         return res.err ? Promise.reject(res.err) : Promise.resolve(this);
     }
     getConfig() {
-        if (this.isClosed())
+        if (this.closed())
             throw 'TextToSpeech instance has been closed';
         return JSON.parse(window._kaia.textToSpeechGetConfig(''));
     }
@@ -802,7 +813,7 @@ class TextToSpeech {
         });
         return promise;
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {
@@ -844,46 +855,47 @@ class Sensors {
     constructor() {
         this._closed = false;
         this._listener = null;
+        if (window._kaia === undefined)
+            throw 'Sensors require Android Kaia.ai app to run';
+        if (Sensors.singleton())
+            throw 'Only one instance allowed';
+        window._kaia.sensors = function () { };
+        window._kaia.sensors.engine = this;
+        window._kaia.sensors.cb = function (jsonString) {
+            const opRes = JSON.parse(jsonString);
+            const obj = window._kaia.sensors.engine;
+            if (obj._listener != null)
+                obj._listener(opRes.err, opRes);
+        };
+    }
+    static singleton() {
+        return (window._kaia && window._kaia.sensors) ?
+            window._kaia.sensors.engine : undefined;
     }
     async init(params) {
-        if (window._kaia === undefined)
-            return Promise.reject('Sensors requires Android Kaia.ai app to run');
-        if (window._kaia.sensors === undefined) {
-            window._kaia.sensors = function () { };
-            window._kaia.sensors.engine = this;
-            window._kaia.sensors.cb = function (jsonString) {
-                const opRes = JSON.parse(jsonString);
-                const obj = window._kaia.sensors.engine;
-                if (obj._listener != null)
-                    obj._listener(opRes.err, opRes);
-            };
-        }
-        if (Sensors._created)
-            return Promise.reject('Only one instance allowed');
-        Sensors._created = true;
+        if (Sensors.initialized)
+            return Promise.reject('Already initialized');
         params = params || {};
-        if (params && typeof params.eventListener === 'function')
+        if (typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
+        Sensors.initialized = true;
         const res = JSON.parse(window._kaia.sensorsInit(JSON.stringify(params)));
         return res.err ? Promise.reject(res.err) : Promise.resolve(this);
     }
-    _clearCallback() {
-        window._kaia.sensors.engine = null;
-    }
     list() {
-        if (this.isClosed())
+        if (this.closed())
             throw 'Sensors instance has been closed';
         return JSON.parse(window._kaia.sensorsList(''));
     }
     configure(params) {
-        if (this.isClosed())
+        if (this.closed())
             throw 'Sensors instance has been closed';
         if (!params)
             throw 'Parameters object required';
         return JSON.parse(window._kaia.sensorsConfigure(JSON.stringify(params)));
     }
     describe(params) {
-        if (this.isClosed())
+        if (this.closed())
             throw 'Sensors instance has been closed';
         if (!params)
             throw 'Argument required';
@@ -891,7 +903,7 @@ class Sensors {
             params = { sensors: params };
         return JSON.parse(window._kaia.sensorsDescribe(JSON.stringify(params)));
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {
@@ -899,17 +911,16 @@ class Sensors {
         let res = JSON.parse(window._kaia.sensorsClose());
         if (res.err)
             throw res.err;
-        this._clearCallback();
         this._listener = null;
     }
     setEventListener(listener) {
         this._listener = listener;
     }
 }
-Sensors._created = false;
+Sensors.initialized = false;
 async function createSensors(params) {
-    const sensors = new Sensors();
-    return sensors.init(params);
+    const sensors = Sensors.singleton() || new Sensors();
+    return Sensors.initialized ? Promise.resolve(sensors) : sensors.init(params);
 }
 
 /**
@@ -930,9 +941,9 @@ async function createSensors(params) {
  */
 class DeviceSettings {
     constructor() {
+        this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
             throw 'DeviceSettings requires Android Kaia.ai app to run';
@@ -984,14 +995,14 @@ class DeviceSettings {
     async configure(params) {
         if (!params)
             return Promise.resolve(this);
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('DeviceSettings instance has been closed');
         params = params || {};
         const res = JSON.parse(window._kaia.deviceSettingsConfigure(JSON.stringify(params)));
         return this._makePromise(res);
     }
     async getConfig() {
-        if (this.isClosed())
+        if (this.closed())
             return Promise.reject('DeviceSettings instance has been closed');
         const res = JSON.parse(window._kaia.deviceSettingsGetConfig(''));
         return this._makePromise(res);
@@ -1005,7 +1016,7 @@ class DeviceSettings {
         });
         return promise;
     }
-    isClosed() {
+    closed() {
         return this._closed;
     }
     close() {

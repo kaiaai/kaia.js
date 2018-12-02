@@ -17,20 +17,15 @@
 
 export class TensorFlowMobile {
   _handle: number = -1;
+  _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _modelLoaded: boolean = false;
   _listener: Function | null = null;
 
   constructor() {
-  }
-
-  async init(model: ArrayBuffer, params: any): Promise<any> {
-
     if (window._kaia === undefined)
-      return Promise.reject('TensorFlowMobile requires Android Kaia.ai app to run');
-    if (this._handle !== -1)
-      return Promise.reject('Already initialized');
+      throw 'TensorFlowLite requires Android Kaia.ai app to run';
 
     if (window._kaia.tensorFlowMobile === undefined) {
       window._kaia.tensorFlowMobile = function() {};
@@ -38,12 +33,21 @@ export class TensorFlowMobile {
       window._kaia.tensorFlowMobile.cb = function(jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
         const obj = window._kaia.tensorFlowMobile.engine[opRes.handle];
-        opRes.err ? obj._rejectFunc(opRes.err) :
-          obj._resolveFunc(opRes.event === 'init' ? this : opRes);
+        if (opRes.err)
+          obj._reject(opRes.err);
+        else
+          obj._resolve(opRes.event === 'init' ? obj : opRes);
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
+  }
+
+  async init(model: ArrayBuffer, params: any): Promise<any> {
+    if (this._handle !== -1)
+      return Promise.reject('Already initialized');
+    if (params && typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
 
     window._kaia.tensorFlowMobile.engine.push(this);
     this._handle = window._kaia.tensorFlowMobile.engine.length - 1;
@@ -57,8 +61,6 @@ export class TensorFlowMobile {
 
     params = params || {};
     params.handle = this._handle;
-    if (typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
 
     let res = JSON.parse(window._kaia.tensorFlowMobileInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
@@ -67,7 +69,6 @@ export class TensorFlowMobile {
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.tensorFlowMobile.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -85,9 +86,9 @@ export class TensorFlowMobile {
   }
 
   async run(data: ArrayBuffer[], params: any): Promise<any> {
-    if (this.isClosed())
-      Promise.reject('TensorFlowMobile instance has been closed');
-    const textDecoder = new TextDecoder("iso-8859-1");
+    if (this.closed())
+      return Promise.reject('TensorFlowMobile instance has been closed');
+    const textDecoder = new TextDecoder('iso-8859-1');
     let dataDecoded = [];
     for (let i = 0; i < data.length; i++)
       dataDecoded[i] = textDecoder.decode(data[i]);
@@ -106,12 +107,12 @@ export class TensorFlowMobile {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.tensorFlowMobile.engine[this._handle] = this;
     return promise;
   }
 
-  isClosed(): boolean {
-    return window._kaia.tensorFlowMobile.engine[this._handle] === null;
+  closed(): boolean {
+    // return window._kaia.tensorFlowMobile.engine[this._handle] === null;
+    return this._closed;
   }
 
   setEventListener(listener: Function | null): void {
@@ -119,11 +120,12 @@ export class TensorFlowMobile {
   }
 
   close(): void {
+    this._closed = true;
     let params = { handle: this._handle };
-    window._kaia.tensorFlowMobile.engine[this._handle] = null;
     let res = JSON.parse(window._kaia.tensorFlowMobileClose(JSON.stringify(params)));
-    this._listener = null;
     this._clearCallback();
+    this._listener = null;
+    // window._kaia.tensorFlowMobile.engine[this._handle] = null;
     if (res.err)
       throw res.err;
   }

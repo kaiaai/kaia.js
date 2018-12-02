@@ -79,7 +79,7 @@ export class AndroidMultiDetector {
   }
 
   async detect(params: any): Promise<any> {
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('AndroidMultiDetector instance has been closed');
     if (params === undefined)
       params = {enabled: true};
@@ -108,7 +108,7 @@ export class AndroidMultiDetector {
     return promise;
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 

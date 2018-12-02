@@ -15,9 +15,9 @@
  * =============================================================================
  */
 export declare class AndroidSpeechRecognizer {
+    _closed: boolean;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _closed: boolean;
     _listener: Function | null;
     static initialized: boolean;
     static singleton(): any;
@@ -28,7 +28,7 @@ export declare class AndroidSpeechRecognizer {
     _reject(err: any): void;
     listen(params: any): Promise<any>;
     _makePromise(res: any): Promise<any>;
-    isClosed(): boolean;
+    closed(): boolean;
     close(): void;
     setEventListener(listener: Function | null): void;
 }

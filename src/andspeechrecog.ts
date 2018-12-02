@@ -16,9 +16,9 @@
  */
 
 export class AndroidSpeechRecognizer {
+  _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _closed: boolean = false;
   _listener: Function | null = null;
   static initialized: boolean = false;
 
@@ -79,7 +79,7 @@ export class AndroidSpeechRecognizer {
   }
 
   async listen(params: any): Promise<any> {
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('AndroidSpeechRecognizer instance has been closed');
     if (params == undefined)
       params = {enabled: true};
@@ -101,7 +101,7 @@ export class AndroidSpeechRecognizer {
     return promise;
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 

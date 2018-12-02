@@ -15,9 +15,9 @@
  * =============================================================================
  */
 export declare class DeviceSettings {
+    _closed: boolean;
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _closed: boolean;
     _listener: Function | null;
     static initialized: boolean;
     static singleton(): any;
@@ -29,7 +29,7 @@ export declare class DeviceSettings {
     configure(params: any): Promise<any>;
     getConfig(): Promise<any>;
     _makePromise(res: any): Promise<any>;
-    isClosed(): boolean;
+    closed(): boolean;
     close(): void;
     setEventListener(listener: Function | null): void;
 }

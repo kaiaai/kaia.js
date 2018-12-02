@@ -17,6 +17,7 @@
 
 export class TensorFlowLite {
   _handle: number = -1;
+   _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _modelLoaded: boolean = false;
@@ -85,9 +86,9 @@ export class TensorFlowLite {
   }
 
   async run(data: ArrayBuffer[], params: any): Promise<any> {
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('TensorFlowLite instance has been closed');
-    const textDecoder = new TextDecoder("iso-8859-1");
+    const textDecoder = new TextDecoder('iso-8859-1');
     let dataDecoded = [];
     for (let i = 0; i < data.length; i++)
       dataDecoded[i] = textDecoder.decode(data[i]);
@@ -109,8 +110,9 @@ export class TensorFlowLite {
     return promise;
   }
 
-  isClosed(): boolean {
-    return window._kaia.tensorFlowLite.engine[this._handle] === null;
+  closed(): boolean {
+    return this._closed;
+    //return window._kaia.tensorFlowLite.engine[this._handle] === null;
   }
 
   setEventListener(listener: Function | null): void {
@@ -118,11 +120,12 @@ export class TensorFlowLite {
   }
 
   close(): void {
+    this._closed = true;
     let params = { handle: this._handle };
     let res = JSON.parse(window._kaia.tensorFlowLiteClose(JSON.stringify(params)));
     this._listener = null;
     this._clearCallback();
-    window._kaia.tensorFlowLite.engine[this._handle] = null;
+    //window._kaia.tensorFlowLite.engine[this._handle] = null;
     if (res.err)
       throw res.err;
   }

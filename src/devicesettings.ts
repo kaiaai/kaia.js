@@ -15,9 +15,9 @@
  * =============================================================================
  */
 export class DeviceSettings {
+  _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _closed: boolean = false;
   _listener: Function | null = null;
   static initialized: boolean = false;
 
@@ -80,7 +80,7 @@ export class DeviceSettings {
   async configure(params: any): Promise<any> {
     if (!params)
       return Promise.resolve(this);
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('DeviceSettings instance has been closed');
 
     params = params || {};
@@ -89,7 +89,7 @@ export class DeviceSettings {
   }
 
   async getConfig(): Promise<any> {
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('DeviceSettings instance has been closed');
 
     const res = JSON.parse(window._kaia.deviceSettingsGetConfig(''));
@@ -107,7 +107,7 @@ export class DeviceSettings {
     return promise;
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 

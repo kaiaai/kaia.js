@@ -15,54 +15,53 @@
  * =============================================================================
  */
 export class Sensors {
-  static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
+  static initialized: boolean = false;
+
+  static singleton(): any {
+    return (window._kaia && window._kaia.sensors) ?
+      window._kaia.sensors.engine : undefined;
+  }
 
   constructor() {
+    if (window._kaia === undefined)
+      throw 'Sensors require Android Kaia.ai app to run';
+    if (Sensors.singleton())
+      throw 'Only one instance allowed';
+
+    window._kaia.sensors = function() {};
+    window._kaia.sensors.engine = this;
+    window._kaia.sensors.cb = function(jsonString: string) {
+      const opRes = JSON.parse(jsonString);
+      const obj = window._kaia.sensors.engine;
+      if (obj._listener != null)
+        obj._listener(opRes.err, opRes);
+    };
   }
 
   async init(params: any): Promise<any> {
-
-    if (window._kaia === undefined)
-      return Promise.reject('Sensors requires Android Kaia.ai app to run');
-
-    if (window._kaia.sensors === undefined) {
-      window._kaia.sensors = function() {};
-      window._kaia.sensors.engine = this;
-      window._kaia.sensors.cb = function(jsonString: string) {
-        const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.sensors.engine;
-        if (obj._listener != null)
-          obj._listener(opRes.err, opRes);
-      };
-    }
-
-    if (Sensors._created)
-      return Promise.reject('Only one instance allowed');
-    Sensors._created = true;
+    if (Sensors.initialized)
+      return Promise.reject('Already initialized');
 
     params = params || {};
-    if (params && typeof params.eventListener === 'function')
+    if (typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
+    Sensors.initialized = true;
     const res = JSON.parse(window._kaia.sensorsInit(JSON.stringify(params)));
     return res.err ? Promise.reject(res.err) : Promise.resolve(this);
   }
 
-  _clearCallback(): void {
-    window._kaia.sensors.engine = null;
-  }
-
   list(): any {
-    if (this.isClosed())
+    if (this.closed())
       throw 'Sensors instance has been closed';
 
     return JSON.parse(window._kaia.sensorsList(''));
   }
 
   configure(params: any): any {
-    if (this.isClosed())
+    if (this.closed())
       throw 'Sensors instance has been closed';
     if (!params)
       throw 'Parameters object required';
@@ -71,7 +70,7 @@ export class Sensors {
   }
 
   describe(params: any): any {
-    if (this.isClosed())
+    if (this.closed())
       throw 'Sensors instance has been closed';
     if (!params)
       throw 'Argument required';
@@ -81,7 +80,7 @@ export class Sensors {
     return JSON.parse(window._kaia.sensorsDescribe(JSON.stringify(params)));
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 
@@ -90,7 +89,6 @@ export class Sensors {
     let res = JSON.parse(window._kaia.sensorsClose());
     if (res.err)
       throw res.err;
-    this._clearCallback();
     this._listener = null;
   }
 
@@ -100,6 +98,6 @@ export class Sensors {
 }
 
 export async function createSensors(params: any) {
-  const sensors = new Sensors();
-  return sensors.init(params);
+  const sensors = Sensors.singleton() || new Sensors();
+  return Sensors.initialized ? Promise.resolve(sensors) : sensors.init(params);
 }

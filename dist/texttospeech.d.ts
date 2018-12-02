@@ -30,7 +30,7 @@ export declare class TextToSpeech {
     configure(params: any): Promise<any>;
     getConfig(): any;
     _makePromise(res: any): Promise<any>;
-    isClosed(): boolean;
+    closed(): boolean;
     close(): void;
     setEventListener(listener: Function | null): void;
 }

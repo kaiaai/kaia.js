@@ -18,11 +18,34 @@
 export class PocketSphinx {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  static _created: boolean = false;
-  _closed: boolean = false;
   _listener: Function | null = null;
+  _closed: boolean = false;
+  static initialized: boolean = false;
+
+  static singleton(): any {
+    return (window._kaia && window._kaia.pocketSphinx) ?
+      window._kaia.pocketSphinx.engine : undefined;
+  }
 
   constructor() {
+    if (window._kaia === undefined)
+      throw 'PocketSphinx requires Android Kaia.ai app to run';
+    if (PocketSphinx.singleton())
+      throw 'Only one instance allowed';
+
+    window._kaia.pocketSphinx = function() {};
+    window._kaia.pocketSphinx.engine = this;
+    window._kaia.pocketSphinx.cb = function(jsonString: string) {
+      const opRes = JSON.parse(unescape(jsonString));
+      const obj = window._kaia.pocketSphinx.engine;
+      if (opRes.event === 'init')
+        if (opRes.err)
+          obj._reject(opRes.err);
+        else
+          obj._resolve(opRes);
+      if (obj._listener != null)
+        obj._listener(opRes.err, opRes);
+    };
   }
 
   _extractArrayBufs(params: any): any[] {
@@ -51,30 +74,14 @@ export class PocketSphinx {
   }
 
   async init(params: any): Promise<any> {
-    if (window._kaia === undefined)
-      return Promise.reject('PocketSphinx requires Android Kaia.ai app to run');
-
-    if (window._kaia.pocketSphinx === undefined) {
-      window._kaia.pocketSphinx = function() {};
-      window._kaia.pocketSphinx.engine = this;
-      window._kaia.pocketSphinx.cb = function(jsonString: string) {
-        const opRes = JSON.parse(unescape(jsonString));
-        const obj = window._kaia.pocketSphinx.engine;
-        if (opRes.event === 'init' && (obj._rejectFunc != null) && (obj._resolveFunc != null))
-          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(opRes);
-        if (obj._listener != null)
-          obj._listener(opRes.err, opRes);
-      };
-    }
-
-    if (PocketSphinx._created)
-      return Promise.reject('Only one instance allowed');
-    PocketSphinx._created = true;
+    if (PocketSphinx.initialized)
+      return Promise.reject('Already initialized');
 
     params = params || {};
     if (typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
+    PocketSphinx.initialized = true;
     const data = this._extractArrayBufs(params);
     let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), data));
     return this._makePromise(res);
@@ -90,7 +97,6 @@ export class PocketSphinx {
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.pocketSphinx.engine = null;
   }
 
   _resolve(res: any): void {
@@ -108,14 +114,14 @@ export class PocketSphinx {
   }
 
   async listen(params: any): Promise<any> {
-    if (this.isClosed())
+    if (this.closed())
       return Promise.reject('PocketSphinx instance has been closed');
     if (params == undefined)
-      params = {cmd: "listen"};
+      params = {cmd: 'listen'};
     else if (typeof params == 'boolean')
-      params = params ? {cmd: "listen"} : {cmd: "cancel"};
+      params = params ? {cmd: 'listen'} : {cmd: 'cancel'};
     else if (typeof params == 'string')
-      params = {cmd: "listen", searchName: params};
+      params = {cmd: 'listen', searchName: params};
 
     let res = JSON.parse(window._kaia.pocketSphinxListen(JSON.stringify(params)));
     return this._makePromise(res);
@@ -129,11 +135,10 @@ export class PocketSphinx {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.pocketSphinx.engine = this;
     return promise;
   }
 
-  isClosed(): boolean {
+  closed(): boolean {
     return this._closed;
   }
 
@@ -152,6 +157,6 @@ export class PocketSphinx {
 }
 
 export async function createPocketSphinx(params: any) {
-  const pocketSphinx = new PocketSphinx();
-  return pocketSphinx.init(params);
+  const pocketSphinx = PocketSphinx.singleton() || new PocketSphinx();
+  return PocketSphinx.initialized ? pocketSphinx : pocketSphinx.init(params);
 }

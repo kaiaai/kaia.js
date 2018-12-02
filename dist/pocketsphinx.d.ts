@@ -17,9 +17,10 @@
 export declare class PocketSphinx {
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    static _created: boolean;
-    _closed: boolean;
     _listener: Function | null;
+    _closed: boolean;
+    static initialized: boolean;
+    static singleton(): any;
     constructor();
     _extractArrayBufs(params: any): any[];
     init(params: any): Promise<any>;
@@ -29,7 +30,7 @@ export declare class PocketSphinx {
     _reject(err: any): void;
     listen(params: any): Promise<any>;
     _makePromise(res: any): Promise<any>;
-    isClosed(): boolean;
+    closed(): boolean;
     close(): void;
     setEventListener(listener: Function | null): void;
 }
