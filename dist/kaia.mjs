@@ -706,46 +706,50 @@ async function createSerial(params) {
  */
 class TextToSpeech {
     constructor() {
-        this._handle = -1;
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._closed = false;
         this._listener = null;
+        if (window._kaia === undefined)
+            throw ('TextToSpeech requires Android Kaia.ai app to run');
+        if (TextToSpeech.singleton())
+            throw ('Only one instance allowed');
+        window._kaia.textToSpeech = function () { };
+        window._kaia.textToSpeech.engine = this;
+        window._kaia.textToSpeech.cb = function (jsonString) {
+            const opRes = JSON.parse(jsonString);
+            const obj = window._kaia.textToSpeech.engine;
+            if (opRes.event === 'init' || opRes.event === 'done' || opRes.event === 'error') {
+                if (opRes.err)
+                    obj._reject(opRes.err);
+                else if (!opRes.err)
+                    obj._resolve(opRes.event === 'init' ? obj : opRes.event);
+            }
+            if (obj._listener != null)
+                obj._listener(opRes.err, opRes);
+        };
+    }
+    static singleton() {
+        return (window._kaia && window._kaia.textToSpeech) ?
+            window._kaia.textToSpeech.engine : undefined;
     }
     async init(params) {
-        if (window._kaia === undefined)
-            return Promise.reject('TextToSpeech requires Android Kaia.ai app to run');
-        if (this._handle !== -1)
+        if (TextToSpeech.initialized)
             return Promise.reject('Already initialized');
-        if (window._kaia.textToSpeech === undefined) {
-            window._kaia.textToSpeech = function () { };
-            window._kaia.textToSpeech.engine = this;
-            window._kaia.textToSpeech.cb = function (jsonString) {
-                const opRes = JSON.parse(jsonString);
-                const obj = window._kaia.textToSpeech.engine;
-                if (opRes.event === 'init' || opRes.event === 'done' || opRes.event === 'error') {
-                    if (opRes.err && (obj._rejectFunc != null))
-                        obj._rejectFunc(opRes.err);
-                    else if (!opRes.err && (obj._resolveFunc != null))
-                        obj._resolveFunc(opRes.event === 'init' ? this : opRes.event);
-                }
-                if (obj._listener != null)
-                    obj._listener(opRes.err, opRes);
-            };
-        }
-        if (TextToSpeech._created)
-            return Promise.reject('Only one instance allowed');
-        TextToSpeech._created = true;
         if (params && typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
+        TextToSpeech.initialized = true;
         let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params || {})));
-        return params ? this._makePromise(res).then(this.configure(params)) :
-            this._makePromise(res);
+        if (params) {
+            await this._makePromise(res);
+            return this.configure(params);
+        }
+        else
+            return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.textToSpeech.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -767,12 +771,13 @@ class TextToSpeech {
         let res = JSON.parse(window._kaia.textToSpeechSpeak(JSON.stringify(params)));
         return this._makePromise(res);
     }
-    configure(params) {
+    async configure(params) {
         if (!params)
-            throw ('Parameters object required');
+            return Promise.resolve(this);
         if (this.isClosed())
-            throw ('TextToSpeech instance has been closed');
-        return JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
+            return Promise.reject('TextToSpeech instance has been closed');
+        const res = JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
+        return res.err ? Promise.reject(res.err) : Promise.resolve(this);
     }
     getConfig() {
         if (this.isClosed())
@@ -786,7 +791,6 @@ class TextToSpeech {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.textToSpeech.engine[this._handle] = this;
         return promise;
     }
     isClosed() {
@@ -804,7 +808,7 @@ class TextToSpeech {
         this._listener = listener;
     }
 }
-TextToSpeech._created = false;
+TextToSpeech.initialized = false;
 async function createTextToSpeech(params) {
     const textToSpeech = new TextToSpeech();
     return textToSpeech.init(params);
@@ -920,38 +924,40 @@ class DeviceSettings {
         this._rejectFunc = null;
         this._closed = false;
         this._listener = null;
+        if (window._kaia === undefined)
+            throw ('DeviceSettings requires Android Kaia.ai app to run');
+        if (DeviceSettings.singleton())
+            throw ('Only one instance allowed');
+        window._kaia.deviceSettings = function () { };
+        window._kaia.deviceSettings.engine = this;
+        window._kaia.deviceSettings.cb = function (jsonString) {
+            const opRes = JSON.parse(jsonString);
+            const obj = window._kaia.deviceSettings.engine; // get this
+            if (opRes.event === 'configure' || opRes.event === 'getConfig') {
+                if (opRes.err)
+                    obj._reject(opRes.err);
+                else if (!opRes.err)
+                    obj._resolve(opRes.event === 'configure' ? obj : opRes);
+            }
+            if (obj._listener != null)
+                obj._listener(opRes.err, opRes);
+        };
+    }
+    static singleton() {
+        return (window._kaia && window._kaia.deviceSettings) ?
+            window._kaia.deviceSettings.engine : undefined;
     }
     async init(params) {
-        if (window._kaia === undefined)
-            return Promise.reject('DeviceSettings requires Android Kaia.ai app to run');
-        if (window._kaia.deviceSettings === undefined) {
-            window._kaia.deviceSettings = function () { };
-            window._kaia.deviceSettings.engine = null;
-            window._kaia.deviceSettings.cb = function (jsonString) {
-                const opRes = JSON.parse(jsonString);
-                const obj = window._kaia.deviceSettings.engine;
-                if (opRes.event === 'configure' || opRes.event === 'getConfig') {
-                    if (opRes.err && (obj._rejectFunc != null))
-                        obj._rejectFunc(opRes.err);
-                    else if (!opRes.err && (obj._resolveFunc != null))
-                        obj._resolveFunc(opRes.event === 'configure' ? this : opRes);
-                }
-                if (obj._listener != null)
-                    obj._listener(opRes.err, opRes);
-            };
-        }
-        if (DeviceSettings._created)
-            return Promise.reject('Only one instance allowed');
+        if (DeviceSettings.initialized)
+            return Promise.reject('Already initialized');
         if (params && typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
-        window._kaia.deviceSettings.engine = this;
-        DeviceSettings._created = true;
+        DeviceSettings.initialized = true;
         return (typeof params === 'object') ? this.configure(params) : Promise.resolve(this);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.deviceSettings.engine = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -967,7 +973,7 @@ class DeviceSettings {
     }
     async configure(params) {
         if (!params)
-            return Promise.reject('Parameters object required');
+            return Promise.resolve(this);
         if (this.isClosed())
             return Promise.reject('DeviceSettings instance has been closed');
         params = params || {};
@@ -987,7 +993,6 @@ class DeviceSettings {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.deviceSettings.engine = this;
         return promise;
     }
     isClosed() {
@@ -1005,10 +1010,11 @@ class DeviceSettings {
         this._listener = listener;
     }
 }
-DeviceSettings._created = false;
+DeviceSettings.initialized = false;
 async function createDeviceSettings(params) {
-    const deviceSettings = new DeviceSettings();
-    return deviceSettings.init(params);
+    const deviceSettings = DeviceSettings.singleton() || new DeviceSettings();
+    return DeviceSettings.initialized ? deviceSettings.configure(params) :
+        deviceSettings.init(params);
 }
 
 /**

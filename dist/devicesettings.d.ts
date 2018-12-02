@@ -17,9 +17,10 @@
 export declare class DeviceSettings {
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    static _created: boolean;
     _closed: boolean;
     _listener: Function | null;
+    static initialized: boolean;
+    static singleton(): any;
     constructor();
     init(params: any): Promise<any>;
     _clearCallback(): void;

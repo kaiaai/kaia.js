@@ -18,8 +18,8 @@ export class DeviceSettings {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _closed: boolean = false;
-  static initialized: boolean = false;
   _listener: Function | null = null;
+  static initialized: boolean = false;
 
   static singleton(): any {
     return (window._kaia && window._kaia.deviceSettings) ?
@@ -32,22 +32,20 @@ export class DeviceSettings {
     if (DeviceSettings.singleton())
       throw('Only one instance allowed');
 
-    if (!DeviceSettings.singleton()) {
-      window._kaia.deviceSettings = function() {};
-      window._kaia.deviceSettings.engine = this;
-      window._kaia.deviceSettings.cb = function(jsonString: string) {
-        const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.deviceSettings.engine; // get this
-        if (opRes.event === 'configure' || opRes.event === 'getConfig') {
-          if (opRes.err)
-            obj._reject(opRes.err);
-          else if (!opRes.err)
-            obj._resolve(opRes.event === 'configure' ? obj : opRes);
-        }
-        if (obj._listener != null)
-          obj._listener(opRes.err, opRes);
-      };
-    }
+    window._kaia.deviceSettings = function() {};
+    window._kaia.deviceSettings.engine = this;
+    window._kaia.deviceSettings.cb = function(jsonString: string) {
+      const opRes = JSON.parse(jsonString);
+      const obj = window._kaia.deviceSettings.engine; // get this
+      if (opRes.event === 'configure' || opRes.event === 'getConfig') {
+        if (opRes.err)
+          obj._reject(opRes.err);
+        else if (!opRes.err)
+          obj._resolve(opRes.event === 'configure' ? obj : opRes);
+      }
+      if (obj._listener != null)
+        obj._listener(opRes.err, opRes);
+    };
   }
 
   async init(params: any): Promise<any> {
@@ -106,7 +104,6 @@ export class DeviceSettings {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.deviceSettings.engine = this;
     return promise;
   }
 

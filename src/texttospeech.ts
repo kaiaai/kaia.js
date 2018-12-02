@@ -15,57 +15,58 @@
  * =============================================================================
  */
 export class TextToSpeech {
-   _handle: number = -1;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
+  static initialized: boolean = false;
+
+  static singleton(): any {
+    return (window._kaia && window._kaia.textToSpeech) ?
+      window._kaia.textToSpeech.engine : undefined;
+  }
 
   constructor() {
+    if (window._kaia === undefined)
+      throw('TextToSpeech requires Android Kaia.ai app to run');
+    if (TextToSpeech.singleton())
+      throw('Only one instance allowed');
+
+    window._kaia.textToSpeech = function() {};
+    window._kaia.textToSpeech.engine = this;
+    window._kaia.textToSpeech.cb = function(jsonString: string) {
+      const opRes = JSON.parse(jsonString);
+      const obj = window._kaia.textToSpeech.engine;
+      if (opRes.event === 'init' || opRes.event === 'done' || opRes.event === 'error') {
+        if (opRes.err)
+          obj._reject(opRes.err);
+        else if (!opRes.err)
+          obj._resolve(opRes.event === 'init' ? obj : opRes.event);
+      }
+      if (obj._listener != null)
+        obj._listener(opRes.err, opRes);
+    };
   }
 
   async init(params: any): Promise<any> {
-
-    if (window._kaia === undefined)
-      return Promise.reject('TextToSpeech requires Android Kaia.ai app to run');
-    if (this._handle !== -1)
+    if (TextToSpeech.initialized)
       return Promise.reject('Already initialized');
-
-    if (window._kaia.textToSpeech === undefined) {
-      window._kaia.textToSpeech = function() {};
-      window._kaia.textToSpeech.engine = this;
-      window._kaia.textToSpeech.cb = function(jsonString: string) {
-        const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.textToSpeech.engine;
-        if (opRes.event === 'init' || opRes.event === 'done' || opRes.event === 'error') {
-          if (opRes.err && (obj._rejectFunc != null))
-            obj._rejectFunc(opRes.err);
-          else if (!opRes.err && (obj._resolveFunc != null))
-            obj._resolveFunc(opRes.event === 'init' ? this : opRes.event);
-        }
-        if (obj._listener != null)
-          obj._listener(opRes.err, opRes);
-      };
-    }
-
-    if (TextToSpeech._created)
-      return Promise.reject('Only one instance allowed');
-    TextToSpeech._created = true;
 
     if (params && typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
+    TextToSpeech.initialized = true;
     let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params || {})));
-
-    return params ? this._makePromise(res).then(this.configure(params)) :
-      this._makePromise(res);
+    if (params) {
+      await this._makePromise(res);
+      return this.configure(params);
+    } else
+      return this._makePromise(res);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.textToSpeech.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -92,13 +93,14 @@ export class TextToSpeech {
     return this._makePromise(res);
   }
 
-  configure(params: any): any {
+  async configure(params: any): Promise<any> {
     if (!params)
-      throw('Parameters object required');
+      return Promise.resolve(this);
     if (this.isClosed())
-      throw('TextToSpeech instance has been closed');
+      return Promise.reject('TextToSpeech instance has been closed');
 
-    return JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
+    const res = JSON.parse(window._kaia.textToSpeechConfigure(JSON.stringify(params)));
+    return res.err ? Promise.reject(res.err) : Promise.resolve(this);
   }
 
   getConfig(): any {
@@ -116,7 +118,6 @@ export class TextToSpeech {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.textToSpeech.engine[this._handle] = this;
     return promise;
   }
 
