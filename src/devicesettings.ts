@@ -17,49 +17,52 @@
 export class DeviceSettings {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  static _created: boolean = false;
   _closed: boolean = false;
+  static initialized: boolean = false;
   _listener: Function | null = null;
 
-  constructor() {
+  static singleton(): any {
+    return (window._kaia && window._kaia.deviceSettings) ?
+      window._kaia.deviceSettings.engine : undefined;
   }
 
-  async init(params: any): Promise<any> {
+  constructor() {
     if (window._kaia === undefined)
-      return Promise.reject('DeviceSettings requires Android Kaia.ai app to run');
+      throw('DeviceSettings requires Android Kaia.ai app to run');
+    if (DeviceSettings.singleton())
+      throw('Only one instance allowed');
 
-    if (window._kaia.deviceSettings === undefined) {
+    if (!DeviceSettings.singleton()) {
       window._kaia.deviceSettings = function() {};
-      window._kaia.deviceSettings.engine = null;
+      window._kaia.deviceSettings.engine = this;
       window._kaia.deviceSettings.cb = function(jsonString: string) {
         const opRes = JSON.parse(jsonString);
-        const obj = window._kaia.deviceSettings.engine;
+        const obj = window._kaia.deviceSettings.engine; // get this
         if (opRes.event === 'configure' || opRes.event === 'getConfig') {
-          if (opRes.err && (obj._rejectFunc != null))
-            obj._rejectFunc(opRes.err);
-          else if (!opRes.err && (obj._resolveFunc != null))
-            obj._resolveFunc(opRes.event === 'configure' ? this : opRes);
+          if (opRes.err)
+            obj._reject(opRes.err);
+          else if (!opRes.err)
+            obj._resolve(opRes.event === 'configure' ? obj : opRes);
         }
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
+  }
 
-    if (DeviceSettings._created)
-      return Promise.reject('Only one instance allowed');
+  async init(params: any): Promise<any> {
+    if (DeviceSettings.initialized)
+      return Promise.reject('Already initialized');
     if (params && typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
-    window._kaia.deviceSettings.engine = this;
-    DeviceSettings._created = true;
-
+    DeviceSettings.initialized = true;
     return (typeof params === 'object') ? this.configure(params) : Promise.resolve(this);
   }
 
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.deviceSettings.engine = null;
   }
 
   _resolve(res: any): void {
@@ -78,7 +81,7 @@ export class DeviceSettings {
 
   async configure(params: any): Promise<any> {
     if (!params)
-      return Promise.reject('Parameters object required');
+      return Promise.resolve(this);
     if (this.isClosed())
       return Promise.reject('DeviceSettings instance has been closed');
 
@@ -126,6 +129,8 @@ export class DeviceSettings {
 }
 
 export async function createDeviceSettings(params: any) {
-  const deviceSettings = new DeviceSettings();
-  return deviceSettings.init(params);
+  const deviceSettings = DeviceSettings.singleton() || new DeviceSettings();
+
+  return DeviceSettings.initialized ? deviceSettings.configure(params) :
+    deviceSettings.init(params);
 }
