@@ -49,6 +49,24 @@ let result = await tfLite.run([img], {  // classify image
 let probabilities = result.output[0][0];
 ```
 
+Configuration options passed to run():
+```js
+// Input parameters
+  type: 'colorBitmapAsFloat', // input data type colorBitmapAsFloat|float|int|double|long|byte|colorBitmapAsByte
+  width: inputWidth,          // input layer width
+  height: inputHeight,        // input layer height
+  channels: inputChannels,    // input layer channels
+  batchSize: inputBatchSize,  // input layer batch size
+  imageMean: imageMean,       // input image mean, 0...255, default 128
+  imageStd: imageStd,         // input image standard deviation, default 128
+// Output parameters
+  type: 'float',              // output data type float|int|double|long|byte
+  size: [1, 1001],            // output data size
+// Miscellaneous options
+  useNNAPI: false,            // use Android NN API, default false
+  numThreads: 0               // number of threads to use, default 0
+```
+
 ### TextToSpeech
 - [Sample App](https://kaia.ai/view-app/5a055af654d7fc08c068f3b9)
 - Sample app [source code](https://github.com/kaiaai/tree/master/text-to-speech)
