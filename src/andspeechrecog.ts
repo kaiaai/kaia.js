@@ -29,9 +29,9 @@ export class AndroidSpeechRecognizer {
 
   constructor() {
     if (window._kaia === undefined)
-      throw('AndroidSpeechRecognizer requires Android Kaia.ai app to run');
+      throw 'AndroidSpeechRecognizer requires Android Kaia.ai app to run';
     if (AndroidSpeechRecognizer.singleton())
-      throw('Only one instance allowed');
+      throw 'Only one instance allowed';
 
     window._kaia.androidSpeechRecognizer = function() {};
     window._kaia.androidSpeechRecognizer.engine = this;
@@ -109,7 +109,7 @@ export class AndroidSpeechRecognizer {
     this._closed = true;
     let res = JSON.parse(window._kaia.androidSpeechRecognizerClose());
     if (res.err)
-      throw(res.err);
+      throw res.err;
     this._clearCallback();
     this._listener = null;
   }

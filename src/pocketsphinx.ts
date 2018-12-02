@@ -141,7 +141,7 @@ export class PocketSphinx {
     this._closed = true;
     let res = JSON.parse(window._kaia.pocketSphinxClose());
     if (res.err)
-      throw(res.err);
+      throw res.err;
     this._clearCallback();
     this._listener = null;
   }

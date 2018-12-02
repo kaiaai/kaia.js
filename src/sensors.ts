@@ -56,25 +56,25 @@ export class Sensors {
 
   list(): any {
     if (this.isClosed())
-      throw('Sensors instance has been closed');
+      throw 'Sensors instance has been closed';
 
     return JSON.parse(window._kaia.sensorsList(''));
   }
 
   configure(params: any): any {
     if (this.isClosed())
-      throw('Sensors instance has been closed');
+      throw 'Sensors instance has been closed';
     if (!params)
-      throw('Parameters object required');
+      throw 'Parameters object required';
 
     return JSON.parse(window._kaia.sensorsConfigure(JSON.stringify(params)));
   }
 
   describe(params: any): any {
     if (this.isClosed())
-      throw('Sensors instance has been closed');
+      throw 'Sensors instance has been closed';
     if (!params)
-      throw('Argument required');
+      throw 'Argument required';
     if (Array.isArray(params))
       params = {sensors: params};
 
@@ -89,7 +89,7 @@ export class Sensors {
     this._closed = true;
     let res = JSON.parse(window._kaia.sensorsClose());
     if (res.err)
-      throw(res.err);
+      throw res.err;
     this._clearCallback();
     this._listener = null;
   }

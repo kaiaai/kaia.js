@@ -28,9 +28,9 @@ export class Serial {
 
   constructor() {
     if (window._kaia === undefined)
-      throw('Serial requires Android Kaia.ai app to run');
+      throw 'Serial requires Android Kaia.ai app to run';
     if (Serial.singleton())
-      throw('Only one instance allowed');
+      throw 'Only one instance allowed';
 
     window._kaia.serial = function() {};
     window._kaia.serial.engine = this;
@@ -106,7 +106,7 @@ export class Serial {
     this._closed = true;
     let res = JSON.parse(window._kaia.serialClose());
     if (res.err)
-      throw(res.err);
+      throw res.err;
     this._clearCallback();
     this._listener = null;
   }

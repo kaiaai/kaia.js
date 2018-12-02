@@ -23,13 +23,8 @@ export class TensorFlowLite {
   _listener: Function | null = null;
 
   constructor() {
-  }
-
-  async init(model: ArrayBuffer, params: any): Promise<any> {
     if (window._kaia === undefined)
-      return Promise.reject('TensorFlowLite requires Android Kaia.ai app to run');
-    if (this._handle !== -1)
-      return Promise.reject('Already initialized');
+      throw 'TensorFlowLite requires Android Kaia.ai app to run';
 
     if (window._kaia.tensorFlowLite === undefined) {
       window._kaia.tensorFlowLite = function() {};
@@ -37,12 +32,21 @@ export class TensorFlowLite {
       window._kaia.tensorFlowLite.cb = function(jsonString: string) {
         const opRes = JSON.parse(unescape(jsonString));
         let obj = window._kaia.tensorFlowLite.engine[opRes.handle];
-        opRes.err ? obj._rejectFunc(opRes.err) :
-          obj._resolveFunc(opRes.event === 'init' ? this : opRes);
+        if (opRes.err)
+          obj._reject(opRes.err);
+        else
+          obj._resolve(opRes.event === 'init' ? obj : opRes);
         if (obj._listener != null)
           obj._listener(opRes.err, opRes);
       };
     }
+  }
+
+  async init(model: ArrayBuffer, params: any): Promise<any> {
+    if (this._handle !== -1)
+      return Promise.reject('Already initialized');
+    if (params && typeof params.eventListener === 'function')
+      this.setEventListener(params.eventListener);
 
     window._kaia.tensorFlowLite.engine.push(this);
     this._handle = window._kaia.tensorFlowLite.engine.length - 1;
@@ -56,8 +60,6 @@ export class TensorFlowLite {
 
     params = params || {};
     params.handle = this._handle;
-    if (params && typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
 
     let res = JSON.parse(window._kaia.tensorFlowLiteInit(JSON.stringify(params), modelDecoded));
     return this._makePromise(res);
@@ -66,7 +68,6 @@ export class TensorFlowLite {
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.tensorFlowLite.engine[this._handle] = null;
   }
 
   _resolve(res: any): void {
@@ -105,7 +106,6 @@ export class TensorFlowLite {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.tensorFlowLite.engine[this._handle] = this;
     return promise;
   }
 
@@ -119,12 +119,12 @@ export class TensorFlowLite {
 
   close(): void {
     let params = { handle: this._handle };
-    window._kaia.tensorFlowLite.engine[this._handle] = null;
     let res = JSON.parse(window._kaia.tensorFlowLiteClose(JSON.stringify(params)));
     this._listener = null;
     this._clearCallback();
+    window._kaia.tensorFlowLite.engine[this._handle] = null;
     if (res.err)
-      throw(res.err);
+      throw res.err;
   }
 }
 

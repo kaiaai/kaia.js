@@ -109,7 +109,7 @@ class TensorFlowMobile {
         this._listener = null;
         this._clearCallback();
         if (res.err)
-            throw (res.err);
+            throw res.err;
     }
 }
 async function createTensorFlowMobile(model, params) {
@@ -140,24 +140,28 @@ class TensorFlowLite {
         this._rejectFunc = null;
         this._modelLoaded = false;
         this._listener = null;
-    }
-    async init(model, params) {
         if (window._kaia === undefined)
-            return Promise.reject('TensorFlowLite requires Android Kaia.ai app to run');
-        if (this._handle !== -1)
-            return Promise.reject('Already initialized');
+            throw 'TensorFlowLite requires Android Kaia.ai app to run';
         if (window._kaia.tensorFlowLite === undefined) {
             window._kaia.tensorFlowLite = function () { };
             window._kaia.tensorFlowLite.engine = [];
             window._kaia.tensorFlowLite.cb = function (jsonString) {
                 const opRes = JSON.parse(unescape(jsonString));
                 let obj = window._kaia.tensorFlowLite.engine[opRes.handle];
-                opRes.err ? obj._rejectFunc(opRes.err) :
-                    obj._resolveFunc(opRes.event === 'init' ? this : opRes);
+                if (opRes.err)
+                    obj._reject(opRes.err);
+                else
+                    obj._resolve(opRes.event === 'init' ? obj : opRes);
                 if (obj._listener != null)
                     obj._listener(opRes.err, opRes);
             };
         }
+    }
+    async init(model, params) {
+        if (this._handle !== -1)
+            return Promise.reject('Already initialized');
+        if (params && typeof params.eventListener === 'function')
+            this.setEventListener(params.eventListener);
         window._kaia.tensorFlowLite.engine.push(this);
         this._handle = window._kaia.tensorFlowLite.engine.length - 1;
         if (this._modelLoaded)
@@ -167,15 +171,12 @@ class TensorFlowLite {
         const modelDecoded = new TextDecoder('iso-8859-1').decode(model);
         params = params || {};
         params.handle = this._handle;
-        if (params && typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
         let res = JSON.parse(window._kaia.tensorFlowLiteInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.tensorFlowLite.engine[this._handle] = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -208,7 +209,6 @@ class TensorFlowLite {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.tensorFlowLite.engine[this._handle] = this;
         return promise;
     }
     isClosed() {
@@ -219,12 +219,12 @@ class TensorFlowLite {
     }
     close() {
         let params = { handle: this._handle };
-        window._kaia.tensorFlowLite.engine[this._handle] = null;
         let res = JSON.parse(window._kaia.tensorFlowLiteClose(JSON.stringify(params)));
         this._listener = null;
         this._clearCallback();
+        window._kaia.tensorFlowLite.engine[this._handle] = null;
         if (res.err)
-            throw (res.err);
+            throw res.err;
     }
 }
 async function createTensorFlowLite(model, params) {
@@ -353,7 +353,7 @@ class PocketSphinx {
         this._closed = true;
         let res = JSON.parse(window._kaia.pocketSphinxClose());
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }
@@ -390,9 +390,9 @@ class AndroidSpeechRecognizer {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('AndroidSpeechRecognizer requires Android Kaia.ai app to run');
+            throw 'AndroidSpeechRecognizer requires Android Kaia.ai app to run';
         if (AndroidSpeechRecognizer.singleton())
-            throw ('Only one instance allowed');
+            throw 'Only one instance allowed';
         window._kaia.androidSpeechRecognizer = function () { };
         window._kaia.androidSpeechRecognizer.engine = this;
         window._kaia.androidSpeechRecognizer.cb = function (jsonString) {
@@ -461,7 +461,7 @@ class AndroidSpeechRecognizer {
         this._closed = true;
         let res = JSON.parse(window._kaia.androidSpeechRecognizerClose());
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }
@@ -577,7 +577,7 @@ class AndroidMultiDetector {
         this._closed = true;
         let res = JSON.parse(window._kaia.androidMultiDetectorClose(''));
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }
@@ -614,9 +614,9 @@ class Serial {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('Serial requires Android Kaia.ai app to run');
+            throw 'Serial requires Android Kaia.ai app to run';
         if (Serial.singleton())
-            throw ('Only one instance allowed');
+            throw 'Only one instance allowed';
         window._kaia.serial = function () { };
         window._kaia.serial.engine = this;
         window._kaia.serial.cb = function (jsonString) {
@@ -683,7 +683,7 @@ class Serial {
         this._closed = true;
         let res = JSON.parse(window._kaia.serialClose());
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }
@@ -720,9 +720,9 @@ class TextToSpeech {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('TextToSpeech requires Android Kaia.ai app to run');
+            throw 'TextToSpeech requires Android Kaia.ai app to run';
         if (TextToSpeech.singleton())
-            throw ('Only one instance allowed');
+            throw 'Only one instance allowed';
         window._kaia.textToSpeech = function () { };
         window._kaia.textToSpeech.engine = this;
         window._kaia.textToSpeech.cb = function (jsonString) {
@@ -774,7 +774,7 @@ class TextToSpeech {
     }
     async speak(params) {
         if (this.isClosed())
-            throw ('TextToSpeech instance has been closed');
+            throw 'TextToSpeech instance has been closed';
         if (typeof params === 'string')
             params = { text: params };
         let res = JSON.parse(window._kaia.textToSpeechSpeak(JSON.stringify(params)));
@@ -790,7 +790,7 @@ class TextToSpeech {
     }
     getConfig() {
         if (this.isClosed())
-            throw ('TextToSpeech instance has been closed');
+            throw 'TextToSpeech instance has been closed';
         return JSON.parse(window._kaia.textToSpeechGetConfig(''));
     }
     _makePromise(res) {
@@ -809,7 +809,7 @@ class TextToSpeech {
         this._closed = true;
         let res = JSON.parse(window._kaia.textToSpeechClose());
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }
@@ -872,21 +872,21 @@ class Sensors {
     }
     list() {
         if (this.isClosed())
-            throw ('Sensors instance has been closed');
+            throw 'Sensors instance has been closed';
         return JSON.parse(window._kaia.sensorsList(''));
     }
     configure(params) {
         if (this.isClosed())
-            throw ('Sensors instance has been closed');
+            throw 'Sensors instance has been closed';
         if (!params)
-            throw ('Parameters object required');
+            throw 'Parameters object required';
         return JSON.parse(window._kaia.sensorsConfigure(JSON.stringify(params)));
     }
     describe(params) {
         if (this.isClosed())
-            throw ('Sensors instance has been closed');
+            throw 'Sensors instance has been closed';
         if (!params)
-            throw ('Argument required');
+            throw 'Argument required';
         if (Array.isArray(params))
             params = { sensors: params };
         return JSON.parse(window._kaia.sensorsDescribe(JSON.stringify(params)));
@@ -898,7 +898,7 @@ class Sensors {
         this._closed = true;
         let res = JSON.parse(window._kaia.sensorsClose());
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }
@@ -935,9 +935,9 @@ class DeviceSettings {
         this._closed = false;
         this._listener = null;
         if (window._kaia === undefined)
-            throw ('DeviceSettings requires Android Kaia.ai app to run');
+            throw 'DeviceSettings requires Android Kaia.ai app to run';
         if (DeviceSettings.singleton())
-            throw ('Only one instance allowed');
+            throw 'Only one instance allowed';
         window._kaia.deviceSettings = function () { };
         window._kaia.deviceSettings.engine = this;
         window._kaia.deviceSettings.cb = function (jsonString) {
@@ -1012,7 +1012,7 @@ class DeviceSettings {
         this._closed = true;
         let res = JSON.parse(window._kaia.deviceSettingsClose());
         if (res.err)
-            throw (res.err);
+            throw res.err;
         this._clearCallback();
         this._listener = null;
     }

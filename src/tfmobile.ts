@@ -125,7 +125,7 @@ export class TensorFlowMobile {
     this._listener = null;
     this._clearCallback();
     if (res.err)
-      throw(res.err);
+      throw res.err;
   }
 }
 

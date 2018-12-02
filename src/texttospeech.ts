@@ -28,9 +28,9 @@ export class TextToSpeech {
 
   constructor() {
     if (window._kaia === undefined)
-      throw('TextToSpeech requires Android Kaia.ai app to run');
+      throw 'TextToSpeech requires Android Kaia.ai app to run';
     if (TextToSpeech.singleton())
-      throw('Only one instance allowed');
+      throw 'Only one instance allowed';
 
     window._kaia.textToSpeech = function() {};
     window._kaia.textToSpeech.engine = this;
@@ -85,7 +85,7 @@ export class TextToSpeech {
 
   async speak(params: any): Promise<any> {
     if (this.isClosed())
-      throw('TextToSpeech instance has been closed');
+      throw 'TextToSpeech instance has been closed';
     if (typeof params === 'string')
       params = {text: params};
 
@@ -105,7 +105,7 @@ export class TextToSpeech {
 
   getConfig(): any {
     if (this.isClosed())
-      throw('TextToSpeech instance has been closed');
+      throw 'TextToSpeech instance has been closed';
 
     return JSON.parse(window._kaia.textToSpeechGetConfig(''));
   }
@@ -129,7 +129,7 @@ export class TextToSpeech {
     this._closed = true;
     let res = JSON.parse(window._kaia.textToSpeechClose());
     if (res.err)
-      throw(res.err);
+      throw res.err;
     this._clearCallback();
     this._listener = null;
   }

@@ -28,9 +28,9 @@ export class DeviceSettings {
 
   constructor() {
     if (window._kaia === undefined)
-      throw('DeviceSettings requires Android Kaia.ai app to run');
+      throw 'DeviceSettings requires Android Kaia.ai app to run';
     if (DeviceSettings.singleton())
-      throw('Only one instance allowed');
+      throw 'Only one instance allowed';
 
     window._kaia.deviceSettings = function() {};
     window._kaia.deviceSettings.engine = this;
@@ -115,7 +115,7 @@ export class DeviceSettings {
     this._closed = true;
     let res = JSON.parse(window._kaia.deviceSettingsClose());
     if (res.err)
-      throw(res.err);
+      throw res.err;
     this._clearCallback();
     this._listener = null;
   }
