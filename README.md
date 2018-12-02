@@ -73,6 +73,16 @@ let probabilities = result.output[0][0];
 tfLite.close(); // optional
 ```
 
+### TextToSpeech
+
+- [Sample App](https://kaia.ai/view-app/5a055af654d7fc08c068f3b9)
+- Sample app [source code](https://github.com/kaiaai/tree/master/text-to-speech)
+
+```js
+textToSpeech = await createTextToSpeech();
+await textToSpeech.speak('Hello');
+```
+
 ## Installing
 
 ### Via npm + webpack/rollup
@@ -84,7 +94,7 @@ npm install kaia.js
 Now you can require/import `kaia.js`:
 
 ```js
-import { createTfMobile, createTfLite } from 'kaia.js';
+import { createTfMobile, createTfLite, createTextToSpeech } from 'kaia.js';
 ```
 
 ### Via `<script>`
@@ -102,7 +112,7 @@ These built versions are also available on jsDelivr, e.g.:
 <script src="https://cdn.jsdelivr.net/npm/kaia.js/dist/kaia-iife.min.js"></script>
 <!-- Or in modern browsers: -->
 <script type="module">
-  import { createTfMobile, createTfLite } from 'https://cdn.jsdelivr.net/npm/kaia.js';
+  import { createTfMobile, createTfLite, createTextToSpeech } from 'https://cdn.jsdelivr.net/npm/kaia.js';
 </script>
 ```
 and unpkg
@@ -110,7 +120,7 @@ and unpkg
 <script src="https://unpkg.com/kaia.js/dist/kaia-iife.min.js"></script>
 <!-- Or in modern browsers: -->
 <script type="module">
-  import { createTfMobile, createTfLite } from 'https://unpkg.com/kaia.js';
+  import { createTfMobile, createTfLite, createTextToSpeech } from 'https://unpkg.com/kaia.js';
 </script>
 ```
 
