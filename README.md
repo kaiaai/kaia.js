@@ -81,7 +81,8 @@ npm install kaia.js
 Now you can require/import `kaia.js`:
 
 ```js
-import { createTfMobile, createTfLite, createTextToSpeech } from 'kaia.js';
+import { createTfMobile, createTfLite, createTextToSpeech, createAndroidMultiDetect, createPocketSphinx
+         createAndroidSpeechRecognition, createDeviceSettings, createSerial, createSensors} from 'kaia.js';
 ```
 
 ### Via `<script>`
