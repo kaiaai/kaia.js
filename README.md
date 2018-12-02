@@ -86,7 +86,7 @@ import { createTfMobile, createTfLite, createTextToSpeech } from 'kaia.js';
 
 ### Via `<script>`
 * `dist/kaia.mjs` is a valid JS module.
-* `dist/kaia-iife.js` can be used in browsers that don't support modules. `idbKeyval` is created as a global.
+* `dist/kaia-iife.js` can be used in browsers that don't support modules. `kaiaJs` is created as a global.
 * `dist/kaia-iife.min.js` As above, but minified.
 * `dist/kaia-iife-compat.min.js` As above, but works in older browsers such as IE 10.
 * `dist/kaia-amd.js` is an AMD module.
