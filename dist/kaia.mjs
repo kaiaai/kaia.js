@@ -421,9 +421,11 @@ class AndroidSpeechRecognizer {
     async init(params) {
         if (AndroidSpeechRecognizer.initialized)
             return Promise.reject('Already initialized');
-        if (params && typeof params.eventListener === 'function')
+        AndroidSpeechRecognizer.initialized = true;
+        params = params || {};
+        if (typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
-        let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params || {})));
+        let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params)));
         return this._makePromise(res);
     }
     _clearCallback() {
@@ -478,7 +480,8 @@ class AndroidSpeechRecognizer {
 }
 AndroidSpeechRecognizer.initialized = false;
 async function createAndroidSpeechRecognizer(params) {
-    const androidSpeechRecognizer = AndroidSpeechRecognizer.singleton() || new AndroidSpeechRecognizer();
+    const androidSpeechRecognizer = AndroidSpeechRecognizer.singleton() ||
+        new AndroidSpeechRecognizer();
     return AndroidSpeechRecognizer.initialized ?
         Promise.resolve(androidSpeechRecognizer) : androidSpeechRecognizer.init(params);
 }
@@ -645,10 +648,11 @@ class Serial {
     async init(params) {
         if (Serial.initialized)
             return Promise.reject('Already initialized');
-        if (params && typeof params.eventListener === 'function')
+        params = params || {};
+        if (typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
         Serial.initialized = true;
-        let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params || {})));
+        let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
         return this._makePromise(res);
     }
     _clearCallback() {
@@ -752,10 +756,11 @@ class TextToSpeech {
     async init(params) {
         if (TextToSpeech.initialized)
             return Promise.reject('Already initialized');
-        if (params && typeof params.eventListener === 'function')
+        params = params || {};
+        if (typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
         TextToSpeech.initialized = true;
-        let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params || {})));
+        let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
         if (params) {
             await this._makePromise(res);
             return this.configure(params);

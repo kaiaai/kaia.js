@@ -51,11 +51,12 @@ export class Serial {
     if (Serial.initialized)
       return Promise.reject('Already initialized');
 
-    if (params && typeof params.eventListener === 'function')
+    params = params || {};
+    if (typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
     Serial.initialized = true;
-    let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params || {})));
+    let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
     return this._makePromise(res);
   }
 

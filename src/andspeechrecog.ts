@@ -52,10 +52,12 @@ export class AndroidSpeechRecognizer {
     if (AndroidSpeechRecognizer.initialized)
       return Promise.reject('Already initialized');
 
-    if (params && typeof params.eventListener === 'function')
+    AndroidSpeechRecognizer.initialized = true;
+    params = params || {};
+    if (typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
-    let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params || {})));
+    let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params)));
     return this._makePromise(res);
   }
 
@@ -120,7 +122,8 @@ export class AndroidSpeechRecognizer {
 }
 
 export async function createAndroidSpeechRecognizer(params: any) {
-  const androidSpeechRecognizer = AndroidSpeechRecognizer.singleton() || new AndroidSpeechRecognizer();
+  const androidSpeechRecognizer = AndroidSpeechRecognizer.singleton() ||
+    new AndroidSpeechRecognizer();
   return AndroidSpeechRecognizer.initialized ?
     Promise.resolve(androidSpeechRecognizer) : androidSpeechRecognizer.init(params);
 }

@@ -52,11 +52,12 @@ export class TextToSpeech {
     if (TextToSpeech.initialized)
       return Promise.reject('Already initialized');
 
-    if (params && typeof params.eventListener === 'function')
+    params = params || {};
+    if (typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
 
     TextToSpeech.initialized = true;
-    let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params || {})));
+    let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
     if (params) {
       await this._makePromise(res);
       return this.configure(params);
