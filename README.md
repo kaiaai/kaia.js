@@ -1,9 +1,10 @@
 # Kaia.js
 Kaia.ai platform's JS client library
 
-## Live Demo
-- [Sample app](https://kaia.ai/view-app/5a110a4cc0c25c1f565eba63)
-- Sample app [source code](https://github.com/kaiaai/sensors)
+We have not yet launched the platform. For launch announcement please follow us on [Facebook](https://www.facebook.com/kaiaai/).
+
+## Live Demos
+- Browse [sample apps](https://github.com/kaiaai/sample-apps) for live demos, source code
 
 ## Installation
 Kaia.ai robot apps run on Android smartphones. To run sample apps:
