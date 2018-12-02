@@ -608,38 +608,40 @@ class Serial {
         this._rejectFunc = null;
         this._closed = false;
         this._listener = null;
+        if (window._kaia === undefined)
+            throw ('Serial requires Android Kaia.ai app to run');
+        if (Serial.singleton())
+            throw ('Only one instance allowed');
+        window._kaia.serial = function () { };
+        window._kaia.serial.engine = this;
+        window._kaia.serial.cb = function (jsonString) {
+            const opRes = JSON.parse(jsonString);
+            const obj = window._kaia.serial.engine;
+            if (opRes.event === 'serialUsbReady')
+                obj._resolve(obj);
+            if ((opRes.event === 'usbNotSupported' || opRes.event === 'usbDeviceNotWorking' ||
+                opRes.event === 'cdcDriverNotWorking'))
+                obj._reject(opRes.event);
+            if (obj._listener != null)
+                obj._listener(opRes.err, opRes);
+        };
+    }
+    static singleton() {
+        return (window._kaia && window._kaia.serial) ?
+            window._kaia.serial.engine : undefined;
     }
     async init(params) {
-        if (window._kaia === undefined)
-            return Promise.reject('Serial requires Android Kaia.ai app to run');
-        if (window._kaia.serial === undefined) {
-            window._kaia.serial = function () { };
-            window._kaia.serial.engine = this;
-            window._kaia.serial.cb = function (jsonString) {
-                const opRes = JSON.parse(jsonString);
-                const obj = window._kaia.serial.engine;
-                if (opRes.event === 'serialUsbReady' && (obj._resolveFunc != null))
-                    obj._resolveFunc(this);
-                if ((opRes.event === 'usbNotSupported' || opRes.event === 'usbDeviceNotWorking' ||
-                    opRes.event === 'cdcDriverNotWorking') && (obj._rejectFunc != null))
-                    obj._rejectFunc(opRes.event);
-                if (obj._listener != null)
-                    obj._listener(opRes.err, opRes);
-            };
-        }
-        if (Serial._created)
-            return Promise.reject('Only one instance allowed');
-        Serial._created = true;
-        params = params || {};
-        if (typeof params.eventListener === 'function')
+        if (Serial.initialized)
+            return Promise.reject('Already initialized');
+        if (params && typeof params.eventListener === 'function')
             this.setEventListener(params.eventListener);
-        let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
+        Serial.initialized = true;
+        let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params || {})));
         return this._makePromise(res);
     }
     _clearCallback() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        window._kaia.serial.engine = null;
     }
     _resolve(res) {
         let cb = this._resolveFunc;
@@ -655,19 +657,18 @@ class Serial {
     }
     write(params) {
         if (this.isClosed())
-            throw ('Serial instance has been closed');
+            throw 'Serial instance has been closed';
         if (typeof params === 'string')
             params = { message: params };
         return JSON.parse(window._kaia.serialWrite(JSON.stringify(params)));
     }
     _makePromise(res) {
         if (res.err)
-            throw (res.err);
+            return Promise.reject(res.err);
         let promise = new Promise((resolve, reject) => {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;
         });
-        window._kaia.serial.engine = this;
         return promise;
     }
     isClosed() {
@@ -685,9 +686,9 @@ class Serial {
         this._listener = listener;
     }
 }
-Serial._created = false;
+Serial.initialized = false;
 async function createSerial(params) {
-    const serial = new Serial();
+    const serial = Serial.singleton() || new Serial();
     return serial.init(params);
 }
 
@@ -789,7 +790,7 @@ class TextToSpeech {
     }
     _makePromise(res) {
         if (res.err)
-            throw (res.err);
+            return Promise.reject(res.err);
         let promise = new Promise((resolve, reject) => {
             this._resolveFunc = resolve;
             this._rejectFunc = reject;

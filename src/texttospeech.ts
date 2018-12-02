@@ -112,7 +112,7 @@ export class TextToSpeech {
 
   _makePromise(res: any): Promise<any> {
     if (res.err)
-      throw(res.err);
+      return Promise.reject(res.err);
 
     let promise = new Promise<any>((resolve, reject) => {
       this._resolveFunc = resolve;
