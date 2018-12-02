@@ -82,6 +82,8 @@ tfLite.close(); // optional
 textToSpeech = await createTextToSpeech();
 await textToSpeech.speak('Hello');
 ```
+### Deprecation
+Expect TextToSpeech to be eventually deprecated in favor of Web text-to-speech API.
 
 ## Installing
 
