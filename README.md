@@ -19,7 +19,6 @@ Kaia.ai robot apps run on Android smartphones. To run sample apps:
 ## API Overview
 
 ### TfMobile
-
 - [Sample app](https://kaia.ai/view-app/5ba319fc89bed10c954a2702)
 - Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app)
 - Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app-node), built with node.js and webpack
@@ -45,36 +44,20 @@ tfMobile.close(); // optional
 ```
 
 ### TfLite
-
 - [Sample app](https://kaia.ai/view-app/5bbaccffa2f5f31d466259b6)
 - Sample app [source code](https://github.com/kaiaai/tensorflow-lite-app)
 - Sample app [source code](https://github.com/kaiaai/tensorflow-lite-app-node), built with node.js and webpack
 
 ```js
 let tfLite = await createTfLite(model); // load model
-...
-let result = await tfLite.run([img], // classify image
-  {input: [
-    {width: size,
-     height: size,
-     channels: 4,
-     batchSize: 1,
-     imageMean: 128.0,
-     imageStd: 128.0,
-     type: 'colorBitmapAsFloat'
-    }],
-   output: [
-    {type: 'float',
-     size: [1, 1001],
-    }]
-  });
+let result = await tfLite.run([img], {  // classify image
+  input: [{width: size, height: size, channels: 4, batchSize: 1, imageMean: 128.0, imageStd: 128.0, type: 'colorBitmapAsFloat'}],
+  output:[{type: 'float', size: [1, 1001]}]
+});
 let probabilities = result.output[0][0];
-...
-tfLite.close(); // optional
 ```
 
 ### TextToSpeech
-
 - [Sample App](https://kaia.ai/view-app/5a055af654d7fc08c068f3b9)
 - Sample app [source code](https://github.com/kaiaai/tree/master/text-to-speech)
 
@@ -82,13 +65,23 @@ tfLite.close(); // optional
 textToSpeech = await createTextToSpeech();
 await textToSpeech.speak('Hello');
 ```
-### Deprecation
-Expect TextToSpeech to be eventually deprecated in favor of Web text-to-speech API.
 
+### Serial
+- [Sample App](https://kaia.ai/view-app/5bea7418f8864127d7ee4cac)
+- Sample app [source code](https://github.com/kaiaai/tree/master/usb-serial)
+
+```js
+serial = await createSerial({ baudRate: 115200, eventListener: onSerialEvent });
+serial.write('Hello Arduino!\n')
+
+function onSerialEvent(err, data) {
+  if (!err && data.event === 'received')
+     console.log(data.message);
+}
+```
 ## Installing
 
 ### Via npm + webpack/rollup
-
 ```sh
 npm install kaia.js
 ```
@@ -100,7 +93,6 @@ import { createTfMobile, createTfLite, createTextToSpeech } from 'kaia.js';
 ```
 
 ### Via `<script>`
-
 * `dist/kaia.mjs` is a valid JS module.
 * `dist/kaia-iife.js` can be used in browsers that don't support modules. `idbKeyval` is created as a global.
 * `dist/kaia-iife.min.js` As above, but minified.
@@ -127,6 +119,9 @@ and unpkg
 ```
 
 ## Customizing NN Model
-
 - To make a custom TfMobile model please follow a detailed [Google Codelabs TFMobile](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2/#0) tutorial
 - To make a custom TfLite model please follow a detailed [Google Codelabs TFLite](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2-tflite/index.html#0) tutorial
+
+## Deprecations
+- Expect TextToSpeech to be eventually deprecated in favor of Web text-to-speech API.
+- Expect Serial API to be eventually deprecated in favor of WebUSB
