@@ -158,5 +158,6 @@ export class PocketSphinx {
 
 export async function createPocketSphinx(params: any) {
   const pocketSphinx = PocketSphinx.singleton() || new PocketSphinx();
-  return PocketSphinx.initialized ? pocketSphinx : pocketSphinx.init(params);
+  return PocketSphinx.initialized ? Promise.resolve(pocketSphinx) :
+    pocketSphinx.init(params);
 }

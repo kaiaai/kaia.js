@@ -16,42 +16,46 @@
  */
 
 export class AndroidMultiDetector {
-   _handle: number = -1;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  static _created: boolean = false;
   _closed: boolean = false;
   _listener: Function | null = null;
+  static initialized: boolean = false;
+
+  static singleton(): any {
+    return (window._kaia && window._kaia.androidMultiDetector) ?
+      window._kaia.androidMultiDetector.engine : undefined;
+  }
 
   constructor() {
+    if (window._kaia === undefined)
+      throw 'AndroidMultiDetector requires Android Kaia.ai app to run';
+    if (AndroidMultiDetector.singleton())
+      throw 'Only one instance allowed';
+
+    window._kaia.androidMultiDetector = function() {};
+    window._kaia.androidMultiDetector.engine = this;
+    window._kaia.androidMultiDetector.cb = function(jsonString: string) {
+      const opRes = JSON.parse(unescape(jsonString));
+      const obj = window._kaia.androidMultiDetector.engine;
+      if (opRes.event === 'init')
+        if (opRes.err)
+          obj._reject(opRes.err);
+        else
+          obj._resolve(obj);
+      if (obj._listener != null)
+        obj._listener(opRes.err, opRes);
+    };
   }
 
   async init(params: any): Promise<any> {
-
-    if (window._kaia === undefined)
-      return Promise.reject('AndroidMultiDetector requires Android Kaia.ai app to run');
-    if (this._handle !== -1)
+    if (AndroidMultiDetector.initialized)
       return Promise.reject('Already initialized');
 
-    if (window._kaia.androidMultiDetector === undefined) {
-      window._kaia.androidMultiDetector = function() {};
-      window._kaia.androidMultiDetector.engine = this;
-      window._kaia.androidMultiDetector.cb = function(jsonString: string) {
-        const opRes = JSON.parse(unescape(jsonString));
-        const obj = window._kaia.androidMultiDetector.engine;
-        if (opRes.event === 'init' && (obj._rejectFunc != null) && (obj._resolveFunc != null))
-          opRes.err ? obj._rejectFunc(opRes.err) : obj._resolveFunc(this);
-        if (obj._listener != null)
-          obj._listener(opRes.err, opRes);
-      };
-    }
-
-    if (AndroidMultiDetector._created)
-      return Promise.reject('Only one instance allowed');
-    AndroidMultiDetector._created = true;
-
+    // TODO mark initialized if res success
+    AndroidMultiDetector.initialized = true;
     params = params || {};
-    if (params.eventListener)
+    if (typeof params.eventListener === 'function')
       this.setEventListener(params.eventListener);
     
     let res = JSON.parse(window._kaia.androidMultiDetectorInit(JSON.stringify(params)));
@@ -61,7 +65,6 @@ export class AndroidMultiDetector {
   _clearCallback(): void {
     this._resolveFunc = null;
     this._rejectFunc = null;
-    window._kaia.androidMultiDetector.engine = null;
   }
 
   _resolve(res: any): void {
@@ -86,7 +89,7 @@ export class AndroidMultiDetector {
     else if (typeof params === 'boolean')
       params = {enabled: params};
     else if (params instanceof ArrayBuffer) {
-      const textDecoder = new TextDecoder("iso-8859-1");
+      const textDecoder = new TextDecoder('iso-8859-1');
       params = textDecoder.decode(params);
     } else if (typeof params === 'string') {}
     else
@@ -104,7 +107,6 @@ export class AndroidMultiDetector {
       this._resolveFunc = resolve;
       this._rejectFunc = reject;
     });
-    window._kaia.androidMultiDetector.engine = this;
     return promise;
   }
 
@@ -127,6 +129,9 @@ export class AndroidMultiDetector {
 }
 
 export async function createAndroidMultiDetector(params: any) {
-  const androidMultiDetector = new AndroidMultiDetector();
-  return androidMultiDetector.init(params);
+  const androidMultiDetector = AndroidMultiDetector.singleton() ||
+    new AndroidMultiDetector();
+
+  return AndroidMultiDetector.initialized ? Promise.resolve(androidMultiDetector) :
+    androidMultiDetector.init(params);
 }
