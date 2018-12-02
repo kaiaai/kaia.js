@@ -690,7 +690,7 @@ class Serial {
 Serial.initialized = false;
 async function createSerial(params) {
     const serial = Serial.singleton() || new Serial();
-    return serial.init(params);
+    return Serial.initialized ? Promise.resolve(serial) : serial.init(params);
 }
 
 /**

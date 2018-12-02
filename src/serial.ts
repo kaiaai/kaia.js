@@ -118,5 +118,5 @@ export class Serial {
 
 export async function createSerial(params: any) {
   const serial = Serial.singleton() || new Serial();
-  return serial.init(params);
+  return Serial.initialized ? Promise.resolve(serial) : serial.init(params);
 }
