@@ -166,5 +166,6 @@ and unpkg
 - To make a custom TfLite model please follow a detailed [Google Codelabs TFLite](https://codelabs.developers.google.com/codelabs/tensorflow-for-poets-2-tflite/index.html#0) tutorial
 
 ## Deprecations
+- TensorFlow Lite will be replacing TensorFlow Mobile
 - Expect TextToSpeech to be eventually deprecated in favor of Web text-to-speech API.
 - Expect Serial API to be eventually deprecated in favor of WebUSB
