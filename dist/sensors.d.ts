@@ -16,7 +16,7 @@
  */
 export declare class Sensors {
     _closed: boolean;
-    _listener: Function | null;
+    _listener: any;
     static initialized: boolean;
     static singleton(): any;
     constructor();
@@ -26,6 +26,6 @@ export declare class Sensors {
     describe(params: any): any;
     closed(): boolean;
     close(): void;
-    setEventListener(listener: Function | null): void;
+    setEventListener(listener: any): void;
 }
 export declare function createSensors(params: any): Promise<any>;

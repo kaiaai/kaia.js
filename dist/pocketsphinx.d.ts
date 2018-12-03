@@ -17,7 +17,7 @@
 export declare class PocketSphinx {
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
-    _listener: Function | null;
+    _listener: any;
     _closed: boolean;
     static initialized: boolean;
     static singleton(): any;
@@ -32,6 +32,6 @@ export declare class PocketSphinx {
     _makePromise(res: any): Promise<any>;
     closed(): boolean;
     close(): void;
-    setEventListener(listener: Function | null): void;
+    setEventListener(listener: any): void;
 }
 export declare function createPocketSphinx(params: any): Promise<any>;

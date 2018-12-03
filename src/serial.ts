@@ -18,7 +18,7 @@ export class Serial {
   _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _listener: Function | null = null;
+  _listener: any;
   static initialized: boolean = false;
 
   static singleton(): any {
@@ -42,7 +42,7 @@ export class Serial {
       if ((opRes.event === 'usbNotSupported' || opRes.event === 'usbDeviceNotWorking' ||
         opRes.event === 'cdcDriverNotWorking'))
         obj._reject(opRes.event);
-      if (obj._listener != null)
+      if (obj._listener)
         obj._listener(opRes.err, opRes);
     };
   }
@@ -52,8 +52,7 @@ export class Serial {
       return Promise.reject('Already initialized');
 
     params = params || {};
-    if (typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
+    this.setEventListener(params.eventListener);
 
     Serial.initialized = true;
     let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
@@ -112,8 +111,9 @@ export class Serial {
     this._listener = null;
   }
 
-  setEventListener(listener: Function | null): void {
-    this._listener = listener;
+  setEventListener(listener: any): void {
+    if (!listener || typeof listener === 'function')
+      this._listener = listener;
   }
 }
 

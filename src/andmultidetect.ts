@@ -19,7 +19,7 @@ export class AndroidMultiDetector {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _closed: boolean = false;
-  _listener: Function | null = null;
+  _listener: any;
   static initialized: boolean = false;
 
   static singleton(): any {
@@ -43,7 +43,7 @@ export class AndroidMultiDetector {
           obj._reject(opRes.err);
         else
           obj._resolve(obj);
-      if (obj._listener != null)
+      if (obj._listener)
         obj._listener(opRes.err, opRes);
     };
   }
@@ -55,8 +55,7 @@ export class AndroidMultiDetector {
     // TODO mark initialized if res success
     AndroidMultiDetector.initialized = true;
     params = params || {};
-    if (typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
+    this.setEventListener(params.eventListener);
     
     let res = JSON.parse(window._kaia.androidMultiDetectorInit(JSON.stringify(params)));
     return this._makePromise(res);
@@ -123,8 +122,9 @@ export class AndroidMultiDetector {
     this._listener = null;
   }
 
-  setEventListener(listener: Function | null): void {
-    this._listener = listener;
+  setEventListener(listener: any): void {
+    if (!listener || typeof listener === 'function')
+      this._listener = listener;
   }
 }
 

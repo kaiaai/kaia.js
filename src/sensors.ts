@@ -16,7 +16,7 @@
  */
 export class Sensors {
   _closed: boolean = false;
-  _listener: Function | null = null;
+  _listener: any;
   static initialized: boolean = false;
 
   static singleton(): any {
@@ -35,7 +35,7 @@ export class Sensors {
     window._kaia.sensors.cb = function(jsonString: string) {
       const opRes = JSON.parse(jsonString);
       const obj = window._kaia.sensors.engine;
-      if (obj._listener != null)
+      if (obj._listener)
         obj._listener(opRes.err, opRes);
     };
   }
@@ -45,8 +45,7 @@ export class Sensors {
       return Promise.reject('Already initialized');
 
     params = params || {};
-    if (typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
+    this.setEventListener(params.eventListener);
 
     Sensors.initialized = true;
     const res = JSON.parse(window._kaia.sensorsInit(JSON.stringify(params)));
@@ -92,8 +91,9 @@ export class Sensors {
     this._listener = null;
   }
 
-  setEventListener(listener: Function | null): void {
-    this._listener = listener;
+  setEventListener(listener: any): void {
+    if (!listener || typeof listener === 'function')
+      this._listener = listener;
   }
 }
 

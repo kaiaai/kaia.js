@@ -18,7 +18,7 @@ export class DeviceSettings {
   _closed: boolean = false;
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
-  _listener: Function | null = null;
+  _listener: any;
   static initialized: boolean = false;
 
   static singleton(): any {
@@ -43,7 +43,7 @@ export class DeviceSettings {
         else if (!opRes.err)
           obj._resolve(opRes.event === 'configure' ? obj : opRes);
       }
-      if (obj._listener != null)
+      if (obj._listener)
         obj._listener(opRes.err, opRes);
     };
   }
@@ -51,8 +51,7 @@ export class DeviceSettings {
   async init(params: any): Promise<any> {
     if (DeviceSettings.initialized)
       return Promise.reject('Already initialized');
-    if (params && typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
+    this.setEventListener((params || {}).eventListener);
 
     DeviceSettings.initialized = true;
     return (typeof params === 'object') ? this.configure(params) : Promise.resolve(this);
@@ -120,8 +119,9 @@ export class DeviceSettings {
     this._listener = null;
   }
 
-  setEventListener(listener: Function | null): void {
-    this._listener = listener;
+  setEventListener(listener: any): void {
+    if (!listener || typeof listener === 'function')
+      this._listener = listener;
   }
 }
 

@@ -21,7 +21,6 @@ class TensorFlowMobile {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._modelLoaded = false;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'TensorFlowLite requires Android Kaia.ai app to run';
         if (window._kaia.tensorFlowMobile === undefined) {
@@ -34,7 +33,7 @@ class TensorFlowMobile {
                     obj._reject(opRes.err);
                 else
                     obj._resolve(opRes.event === 'init' ? obj : opRes);
-                if (obj._listener != null)
+                if (obj._listener)
                     obj._listener(opRes.err, opRes);
             };
         }
@@ -42,8 +41,6 @@ class TensorFlowMobile {
     async init(model, params) {
         if (this._handle !== -1)
             return Promise.reject('Already initialized');
-        if (params && typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
         window._kaia.tensorFlowMobile.engine.push(this);
         this._handle = window._kaia.tensorFlowMobile.engine.length - 1;
         if (this._modelLoaded)
@@ -52,6 +49,7 @@ class TensorFlowMobile {
         // Must use Chrome
         const modelDecoded = new TextDecoder("iso-8859-1").decode(model);
         params = params || {};
+        this.setEventListener(params.eventListener);
         params.handle = this._handle;
         let res = JSON.parse(window._kaia.tensorFlowMobileInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
@@ -97,9 +95,6 @@ class TensorFlowMobile {
         // return window._kaia.tensorFlowMobile.engine[this._handle] === null;
         return this._closed;
     }
-    setEventListener(listener) {
-        this._listener = listener;
-    }
     close() {
         this._closed = true;
         let params = { handle: this._handle };
@@ -109,6 +104,10 @@ class TensorFlowMobile {
         // window._kaia.tensorFlowMobile.engine[this._handle] = null;
         if (res.err)
             throw res.err;
+    }
+    setEventListener(listener) {
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 async function createTensorFlowMobile(model, params) {
@@ -139,7 +138,6 @@ class TensorFlowLite {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._modelLoaded = false;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'TensorFlowLite requires Android Kaia.ai app to run';
         if (window._kaia.tensorFlowLite === undefined) {
@@ -152,7 +150,7 @@ class TensorFlowLite {
                     obj._reject(opRes.err);
                 else
                     obj._resolve(opRes.event === 'init' ? obj : opRes);
-                if (obj._listener != null)
+                if (obj._listener)
                     obj._listener(opRes.err, opRes);
             };
         }
@@ -160,8 +158,6 @@ class TensorFlowLite {
     async init(model, params) {
         if (this._handle !== -1)
             return Promise.reject('Already initialized');
-        if (params && typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
         window._kaia.tensorFlowLite.engine.push(this);
         this._handle = window._kaia.tensorFlowLite.engine.length - 1;
         if (this._modelLoaded)
@@ -170,6 +166,7 @@ class TensorFlowLite {
         // Must use Chrome
         const modelDecoded = new TextDecoder('iso-8859-1').decode(model);
         params = params || {};
+        this.setEventListener(params.eventListener);
         params.handle = this._handle;
         let res = JSON.parse(window._kaia.tensorFlowLiteInit(JSON.stringify(params), modelDecoded));
         return this._makePromise(res);
@@ -215,9 +212,6 @@ class TensorFlowLite {
         return this._closed;
         //return window._kaia.tensorFlowLite.engine[this._handle] === null;
     }
-    setEventListener(listener) {
-        this._listener = listener;
-    }
     close() {
         this._closed = true;
         let params = { handle: this._handle };
@@ -227,6 +221,10 @@ class TensorFlowLite {
         //window._kaia.tensorFlowLite.engine[this._handle] = null;
         if (res.err)
             throw res.err;
+    }
+    setEventListener(listener) {
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 async function createTensorFlowLite(model, params) {
@@ -254,7 +252,6 @@ class PocketSphinx {
     constructor() {
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._listener = null;
         this._closed = false;
         if (window._kaia === undefined)
             throw 'PocketSphinx requires Android Kaia.ai app to run';
@@ -270,7 +267,7 @@ class PocketSphinx {
                     obj._reject(opRes.err);
                 else
                     obj._resolve(opRes);
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -303,8 +300,7 @@ class PocketSphinx {
         if (PocketSphinx.initialized)
             return Promise.reject('Already initialized');
         params = params || {};
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener(params.eventListener);
         PocketSphinx.initialized = true;
         const data = this._extractArrayBufs(params);
         let res = JSON.parse(window._kaia.pocketSphinxInit(JSON.stringify(params), data));
@@ -365,7 +361,8 @@ class PocketSphinx {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 PocketSphinx.initialized = false;
@@ -396,7 +393,6 @@ class AndroidSpeechRecognizer {
         this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'AndroidSpeechRecognizer requires Android Kaia.ai app to run';
         if (AndroidSpeechRecognizer.singleton())
@@ -411,7 +407,7 @@ class AndroidSpeechRecognizer {
                     obj._reject(opRes.err);
                 else
                     obj._resolve(obj);
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -424,8 +420,7 @@ class AndroidSpeechRecognizer {
             return Promise.reject('Already initialized');
         AndroidSpeechRecognizer.initialized = true;
         params = params || {};
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener(params.eventListener);
         let res = JSON.parse(window._kaia.androidSpeechRecognizerInit(JSON.stringify(params)));
         return this._makePromise(res);
     }
@@ -476,7 +471,8 @@ class AndroidSpeechRecognizer {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 AndroidSpeechRecognizer.initialized = false;
@@ -508,7 +504,6 @@ class AndroidMultiDetector {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._closed = false;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'AndroidMultiDetector requires Android Kaia.ai app to run';
         if (AndroidMultiDetector.singleton())
@@ -523,7 +518,7 @@ class AndroidMultiDetector {
                     obj._reject(opRes.err);
                 else
                     obj._resolve(obj);
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -537,8 +532,7 @@ class AndroidMultiDetector {
         // TODO mark initialized if res success
         AndroidMultiDetector.initialized = true;
         params = params || {};
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener(params.eventListener);
         let res = JSON.parse(window._kaia.androidMultiDetectorInit(JSON.stringify(params)));
         return this._makePromise(res);
     }
@@ -596,7 +590,8 @@ class AndroidMultiDetector {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 AndroidMultiDetector.initialized = false;
@@ -628,7 +623,6 @@ class Serial {
         this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'Serial requires Android Kaia.ai app to run';
         if (Serial.singleton())
@@ -643,7 +637,7 @@ class Serial {
             if ((opRes.event === 'usbNotSupported' || opRes.event === 'usbDeviceNotWorking' ||
                 opRes.event === 'cdcDriverNotWorking'))
                 obj._reject(opRes.event);
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -655,8 +649,7 @@ class Serial {
         if (Serial.initialized)
             return Promise.reject('Already initialized');
         params = params || {};
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener(params.eventListener);
         Serial.initialized = true;
         let res = JSON.parse(window._kaia.serialInit(JSON.stringify(params)));
         return this._makePromise(res);
@@ -705,7 +698,8 @@ class Serial {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 Serial.initialized = false;
@@ -735,7 +729,6 @@ class TextToSpeech {
         this._resolveFunc = null;
         this._rejectFunc = null;
         this._closed = false;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'TextToSpeech requires Android Kaia.ai app to run';
         if (TextToSpeech.singleton())
@@ -751,7 +744,7 @@ class TextToSpeech {
                 else if (!opRes.err)
                     obj._resolve(opRes.event === 'init' ? obj : opRes.event);
             }
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -763,8 +756,7 @@ class TextToSpeech {
         if (TextToSpeech.initialized)
             return Promise.reject('Already initialized');
         params = params || {};
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener(params.eventListener);
         TextToSpeech.initialized = true;
         let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
         if (params) {
@@ -832,7 +824,8 @@ class TextToSpeech {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 TextToSpeech.initialized = false;
@@ -861,7 +854,6 @@ async function createTextToSpeech(params) {
 class Sensors {
     constructor() {
         this._closed = false;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'Sensors require Android Kaia.ai app to run';
         if (Sensors.singleton())
@@ -871,7 +863,7 @@ class Sensors {
         window._kaia.sensors.cb = function (jsonString) {
             const opRes = JSON.parse(jsonString);
             const obj = window._kaia.sensors.engine;
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -883,8 +875,7 @@ class Sensors {
         if (Sensors.initialized)
             return Promise.reject('Already initialized');
         params = params || {};
-        if (typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener(params.eventListener);
         Sensors.initialized = true;
         const res = JSON.parse(window._kaia.sensorsInit(JSON.stringify(params)));
         return res.err ? Promise.reject(res.err) : Promise.resolve(this);
@@ -921,7 +912,8 @@ class Sensors {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 Sensors.initialized = false;
@@ -951,7 +943,6 @@ class DeviceSettings {
         this._closed = false;
         this._resolveFunc = null;
         this._rejectFunc = null;
-        this._listener = null;
         if (window._kaia === undefined)
             throw 'DeviceSettings requires Android Kaia.ai app to run';
         if (DeviceSettings.singleton())
@@ -967,7 +958,7 @@ class DeviceSettings {
                 else if (!opRes.err)
                     obj._resolve(opRes.event === 'configure' ? obj : opRes);
             }
-            if (obj._listener != null)
+            if (obj._listener)
                 obj._listener(opRes.err, opRes);
         };
     }
@@ -978,8 +969,7 @@ class DeviceSettings {
     async init(params) {
         if (DeviceSettings.initialized)
             return Promise.reject('Already initialized');
-        if (params && typeof params.eventListener === 'function')
-            this.setEventListener(params.eventListener);
+        this.setEventListener((params || {}).eventListener);
         DeviceSettings.initialized = true;
         return (typeof params === 'object') ? this.configure(params) : Promise.resolve(this);
     }
@@ -1035,7 +1025,8 @@ class DeviceSettings {
         this._listener = null;
     }
     setEventListener(listener) {
-        this._listener = listener;
+        if (!listener || typeof listener === 'function')
+            this._listener = listener;
     }
 }
 DeviceSettings.initialized = false;

@@ -18,7 +18,7 @@ export declare class TextToSpeech {
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
     _closed: boolean;
-    _listener: Function | null;
+    _listener: any;
     static initialized: boolean;
     static singleton(): any;
     constructor();
@@ -32,6 +32,6 @@ export declare class TextToSpeech {
     _makePromise(res: any): Promise<any>;
     closed(): boolean;
     close(): void;
-    setEventListener(listener: Function | null): void;
+    setEventListener(listener: any): void;
 }
 export declare function createTextToSpeech(params: any): Promise<any>;

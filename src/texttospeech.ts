@@ -18,7 +18,7 @@ export class TextToSpeech {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _closed: boolean = false;
-  _listener: Function | null = null;
+  _listener: any;
   static initialized: boolean = false;
 
   static singleton(): any {
@@ -43,7 +43,7 @@ export class TextToSpeech {
         else if (!opRes.err)
           obj._resolve(opRes.event === 'init' ? obj : opRes.event);
       }
-      if (obj._listener != null)
+      if (obj._listener)
         obj._listener(opRes.err, opRes);
     };
   }
@@ -53,8 +53,7 @@ export class TextToSpeech {
       return Promise.reject('Already initialized');
 
     params = params || {};
-    if (typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
+    this.setEventListener(params.eventListener);
 
     TextToSpeech.initialized = true;
     let res = JSON.parse(window._kaia.textToSpeechInit(JSON.stringify(params)));
@@ -135,8 +134,9 @@ export class TextToSpeech {
     this._listener = null;
   }
 
-  setEventListener(listener: Function | null): void {
-    this._listener = listener;
+  setEventListener(listener: any): void {
+    if (!listener || typeof listener === 'function')
+      this._listener = listener;
   }
 }
 

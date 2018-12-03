@@ -21,7 +21,7 @@ export class TensorFlowLite {
   _resolveFunc: Function | null = null;
   _rejectFunc: Function | null = null;
   _modelLoaded: boolean = false;
-  _listener: Function | null = null;
+  _listener: any;
 
   constructor() {
     if (window._kaia === undefined)
@@ -37,7 +37,7 @@ export class TensorFlowLite {
           obj._reject(opRes.err);
         else
           obj._resolve(opRes.event === 'init' ? obj : opRes);
-        if (obj._listener != null)
+        if (obj._listener)
           obj._listener(opRes.err, opRes);
       };
     }
@@ -46,8 +46,6 @@ export class TensorFlowLite {
   async init(model: ArrayBuffer, params: any): Promise<any> {
     if (this._handle !== -1)
       return Promise.reject('Already initialized');
-    if (params && typeof params.eventListener === 'function')
-      this.setEventListener(params.eventListener);
 
     window._kaia.tensorFlowLite.engine.push(this);
     this._handle = window._kaia.tensorFlowLite.engine.length - 1;
@@ -60,6 +58,7 @@ export class TensorFlowLite {
     const modelDecoded = new TextDecoder('iso-8859-1').decode(model);
 
     params = params || {};
+    this.setEventListener(params.eventListener);
     params.handle = this._handle;
 
     let res = JSON.parse(window._kaia.tensorFlowLiteInit(JSON.stringify(params), modelDecoded));
@@ -115,10 +114,6 @@ export class TensorFlowLite {
     //return window._kaia.tensorFlowLite.engine[this._handle] === null;
   }
 
-  setEventListener(listener: Function | null): void {
-    this._listener = listener;
-  }
-
   close(): void {
     this._closed = true;
     let params = { handle: this._handle };
@@ -128,6 +123,11 @@ export class TensorFlowLite {
     //window._kaia.tensorFlowLite.engine[this._handle] = null;
     if (res.err)
       throw res.err;
+  }
+
+  setEventListener(listener: any): void {
+    if (!listener || typeof listener === 'function')
+      this._listener = listener;
   }
 }
 

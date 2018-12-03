@@ -20,7 +20,7 @@ export declare class TensorFlowMobile {
     _resolveFunc: Function | null;
     _rejectFunc: Function | null;
     _modelLoaded: boolean;
-    _listener: Function | null;
+    _listener: any;
     constructor();
     init(model: ArrayBuffer, params: any): Promise<any>;
     _clearCallback(): void;
@@ -29,7 +29,7 @@ export declare class TensorFlowMobile {
     run(data: ArrayBuffer[], params: any): Promise<any>;
     _makePromise(res: any): Promise<any>;
     closed(): boolean;
-    setEventListener(listener: Function | null): void;
     close(): void;
+    setEventListener(listener: any): void;
 }
 export declare function createTensorFlowMobile(model: ArrayBuffer, params: any): Promise<any>;
