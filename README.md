@@ -18,29 +18,13 @@ Kaia.ai robot apps run on Android smartphones. To run sample apps:
 
 ## API Overview
 
-### TfMobile
-- [Sample app](https://kaia.ai/view-app/5ba319fc89bed10c954a2702)
-- Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app)
-- Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app-node), built with node.js and webpack
-
-```js
-let tfMobile = await createTfMobile(model); // load model
-let result = await tfMobile.run([img], {    // classify image
-  feed: [{width: size, height: size, inputName: 'input', imageMean: 128.0, imageStd: 128.0,
-          feedType: 'colorBitmapAsFloat'}],
-  run: {enableStats: false},
-  fetch: {outputNames: ['MobilenetV1/Predictions/Softmax'], outputTypes: ['float']}
-});
-let probabilities = result.output[0];
-```
-
-### TfLite
+### TensorFlow Lite API
 - [Sample app](https://kaia.ai/view-app/5bbaccffa2f5f31d466259b6)
 - Sample app [source code](https://github.com/kaiaai/tensorflow-lite-app)
 - Sample app [source code](https://github.com/kaiaai/tensorflow-lite-app-node), built with node.js and webpack
 
 ```js
-let tfLite = await createTfLite(model); // load model
+let tfLite = await createTensorFlowLite(model); // load model
 let result = await tfLite.run([img], {  // classify image
   input: [{width: size, height: size, channels: 4, batchSize: 1, imageMean: 128.0, imageStd: 128.0,
            type: 'colorBitmapAsFloat'}],
@@ -67,7 +51,23 @@ Configuration options passed to run():
   numThreads: 0               // number of threads to use, default 0
 ```
 
-### TextToSpeech
+### TensorFlow Mobile API
+- [Sample app](https://kaia.ai/view-app/5ba319fc89bed10c954a2702)
+- Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app)
+- Sample app [source code](https://github.com/kaiaai/tensorflow-mobile-app-node), built with node.js and webpack
+
+```js
+let tfMobile = await createTensorFlowMobile(model); // load model
+let result = await tfMobile.run([img], {    // classify image
+  feed: [{width: size, height: size, inputName: 'input', imageMean: 128.0, imageStd: 128.0,
+          feedType: 'colorBitmapAsFloat'}],
+  run: {enableStats: false},
+  fetch: {outputNames: ['MobilenetV1/Predictions/Softmax'], outputTypes: ['float']}
+});
+let probabilities = result.output[0];
+```
+
+### TextToSpeech API
 - [Sample App](https://kaia.ai/view-app/5a055af654d7fc08c068f3b9)
 - Sample app [source code](https://github.com/kaiaai/tree/master/text-to-speech)
 
@@ -76,7 +76,7 @@ textToSpeech = await createTextToSpeech();
 await textToSpeech.speak('Hello');
 ```
 
-### Serial
+### Serial API
 - [Sample App](https://kaia.ai/view-app/5bea7418f8864127d7ee4cac)
 - Sample app [source code](https://github.com/kaiaai/tree/master/usb-serial)
 
@@ -89,6 +89,38 @@ function onSerialEvent(err, data) {
      console.log(data.message);
 }
 ```
+
+### MultiDetector API
+Detects faces, barcodes, text. Decodes barcode data. Performs OCR (optical character recognition) on text.
+- [Sample App](https://kaia.ai/view-app/5b8b8336c38e3b3579ca986f)
+- Sample app [source code](https://github.com/kaiaai/tree/master/face-detection)
+
+```js
+let multiDet = await createAndroidMultiDetector({
+  "face" : {"enableDetection" : true, "computeLandmarks" : false, "useFastSpeed" : true, "tracking" : true,
+            "prominentFacesOnly" : true, "computeClassifications" : false, "minFaceSize" : 0.2},
+  "barcodes" : {"enableDetection" : false},
+  "text" : {"enableDetection" : false},
+  eventListener: (err, res) => { if (!err) reactToFaces(res); }
+});
+let imageURI = grabFrame();
+await multiDet.detect(imageURI);
+
+function reactToFaces(data) {
+  if (data.faces.length == 0) {
+    console.log('I don\'t see any faces'); return;
+  }
+  if (data.faces.length > 1)
+    console.log('I see ' + data.faces.length + ' faces');    
+  let face = data.faces[0];
+  let left_x = face.left;
+  let width = face.width;
+  let top = face.top;
+  let height = face.height;
+  // ...
+}
+```
+
 ## Installing
 
 ### Via npm + webpack/rollup
