@@ -1,6 +1,6 @@
 {
     "name": "kaia.js",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "description": "JS library for Kaia.ai robots",
     "main": "./dist/kaia-cjs.js",
     "module": "./dist/kaia.mjs",
