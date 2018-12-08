@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/kaia.js.svg)](https://www.npmjs.com/package/kaia.js)
+
 # Kaia.js
 Kaia.ai platform's JS client library
 
