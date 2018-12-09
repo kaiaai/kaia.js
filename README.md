@@ -125,6 +125,41 @@ function reactToFaces(data) {
 }
 ```
 
+### Device Settings API
+Control device settings including full screen view, screen orientation, disabling swipe-to-reload gesture, wake lock, page zoom, sound volume, muting sound. Obtain device information including Android app version, GPS state, network connection type, WiFi state and IP, display rotation.
+
+- [Sample app](https://kaia.ai/view-app/5bf3b412a444a76d57bd2899)
+- Sample app [source code](https://github.com/kaiaai/tree/master/device-settings)
+
+```js
+// Query device settings
+const deviceSettings = createDeviceSettings();
+const deviceConfig = await deviceSettings.getConfig();
+console.log(deviceConfig);
+// Sample output:
+// { fullScreen: false, swipeToReload: true, screenOrientationLock: false,
+//   wakeLock: false, pageZoom: true, appVersion: '0.4.0.beta.rel',
+//   muted: false, gpsEnabled: true, networkEnabled: true, connectedToInternet: true,
+//   wifi: { inUse: true, signalLevel: 3, rssi: -63, ip: 102.168.1.18 },
+//   volume: 1, maxVolume: 0.25, displayRotation: 0
+// }
+
+// Change device settings
+let config = {
+  fullScreen: true, // enter full screen
+  swipeToReload: false, // disable swipe-to-reload-page (for gamepad apps)
+  screenOrientationLock: true, // lock current screen orientation, or choose orientation below:
+    // 'behind', 'fullSensor', 'fullUser', 'landscape', 'locked', 'nosensor', 'portrait',
+    // 'reverseLandscape', 'reversePortrait', 'sensor', 'sensorLandscape', 'sensorPortrait',
+    // 'unspecified', 'user', 'userLandscape', 'userPortrait'
+  wakeLock: true, // keep display on
+  pageZoom: false, // disable page pinch zoom (for gamepad apps)
+  mute: true, // mute (e.g. speech recognition beep)
+  volume: 1.0, // set volume (max=1.0)
+};
+await deviceSettings.configure(config);
+````
+
 ## Installing
 
 ### Via npm + webpack/rollup
