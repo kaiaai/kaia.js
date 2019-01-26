@@ -1,5 +1,4 @@
 [![](https://img.shields.io/npm/v/kaia.js.svg)](https://www.npmjs.com/package/kaia.js)
-[![](https://img.shields.io/npm/dw/kaia.js.svg)](https://www.npmjs.com/package/kaia.js)
 [![](https://img.shields.io/npm/l/kaia.js.svg)](https://www.npmjs.com/package/kaia.js)
 
 # Kaia.js
